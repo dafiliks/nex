@@ -1,4 +1,4 @@
-add_executable (nex "main.cpp")
+add_executable (nex "main.cpp" "tokenizer.cpp")
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)
   set_property(TARGET nex PROPERTY CXX_STANDARD 20)

@@ -1,7 +1,24 @@
 #include <iostream>
+#include <fstream>
+#include <streambuf>
+#include <vector>
 
-int main()
+#include "tokenizer.hpp"
+
+
+int main(int argc, char* argv[])
 {
-    printf("Test");
+    std::vector<token> tokens{};
+
+    std::ifstream file("test.txt");
+    std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+    tokens = tokenize(str);
+
+    for (token token : tokens)
+    {
+        std::cout << token << "\n";
+    }    
+
     return 0;
 }
