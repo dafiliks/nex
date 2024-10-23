@@ -32,4 +32,5 @@
 *.app
 
 # Extra
-./build
+build/
+.vscode/
