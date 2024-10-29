@@ -4,17 +4,33 @@
 #include <vector>
 #include <string>
 #include <variant>
+#include <memory>
 
-enum class ExprType
+#include "tokenizer.hpp"
+
+struct Normal
 {
-    ET_normal,
-    ET_return,
+    int m_constant{};
 };
+
+struct Return
+{
+    int m_constant{};
+};
+
+struct UnOp;
 
 struct Expr
 {
-    ExprType m_expr_type{};
-    int m_int_lit{};
+    std::variant<std::shared_ptr<UnOp>, Normal, Return> m_expr_v{};
+};
+
+struct UnOp
+{
+    TokenType m_op{};
+    std::shared_ptr<Expr> m_expr{};
+
+    UnOp(const TokenType c_op, const std::shared_ptr<Expr> c_expr);
 };
 
 struct Stmt

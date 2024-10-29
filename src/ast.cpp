@@ -3,19 +3,24 @@
 
 #include "ast.hpp"
 
+UnOp::UnOp(const TokenType c_op, const std::shared_ptr<Expr> c_expr) : m_op(c_op), m_expr(c_expr) {};
+
 void print_expr(const Expr& c_expr)
 {
     std::cout << "Expr: { Type: ";
-    switch (c_expr.m_expr_type)
+
+    if (std::holds_alternative<Return>(c_expr.m_expr_v))
     {
-    case (ExprType::ET_normal):
-        std::cout << "Normal";
-        break;
-    case (ExprType::ET_return):
-        std::cout << "Return";
-        break;
+        std::cout << "ReturnExpr: { Constant: " << std::get<Return>(c_expr.m_expr_v).m_constant << " }";
     }
-    std::cout << ", IntLit: " << c_expr.m_int_lit << " }";
+    else if (std::holds_alternative<std::shared_ptr<UnOp>>(c_expr.m_expr_v)) 
+    {
+        std::cout << "\nUnOp { Type: " << to_string(std::get<std::shared_ptr<UnOp>>(c_expr.m_expr_v)->m_op) << ", Expr: ";
+        print_expr(*std::get<std::shared_ptr<UnOp>>(c_expr.m_expr_v)->m_expr);
+        std::cout << " }";
+    }
+
+    std::cout << " }";
 }
 
 void print_stmt(const Stmt& c_stmt)
@@ -41,14 +46,14 @@ void print_program(const Program& c_program)
     std::cout << "Program: [ ";
     for (const auto& item : c_program.m_body)
     {
-        std::visit([](auto&& arg)
-            {
-                using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, FuncDecl>)
-                    print_func_decl(arg);
-                else if constexpr (std::is_same_v<T, Stmt>)
-                    print_stmt(arg);
-            }, item);
+        if (std::holds_alternative<FuncDecl>(item))
+        {
+            print_func_decl(std::get<FuncDecl>(item));
+        }
+        else if (std::holds_alternative<Stmt>(item))
+        {
+            print_stmt(std::get<Stmt>(item));
+        }
         std::cout << " ";
     }
     std::cout << "]\n";
