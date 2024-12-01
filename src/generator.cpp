@@ -28,7 +28,7 @@ void Generator::gen_func_decl(const FuncDecl& c_func_decl)
     }
 }
 
-[[nodiscard]] std::string Generator::gen_program()
+std::string Generator::gen_program()
 {
     for (const auto& item : m_program.m_body)
     {

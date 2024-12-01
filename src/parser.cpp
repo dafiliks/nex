@@ -5,7 +5,7 @@
 
 Parser::Parser(const std::vector<Token>& c_tokens) : m_tokens(c_tokens) {}
 
-[[nodiscard]] Expr Parser::parse_expr()
+Expr Parser::parse_expr()
 {
 	if (peek().get_type() == TokenType::int_lit)
 	{
@@ -22,7 +22,7 @@ Parser::Parser(const std::vector<Token>& c_tokens) : m_tokens(c_tokens) {}
 	}
 }
 
-[[nodiscard]] Stmt Parser::parse_stmt()
+Stmt Parser::parse_stmt()
 {
 	if (peek().get_type() == TokenType::int_lit)
 	{
@@ -42,7 +42,7 @@ Parser::Parser(const std::vector<Token>& c_tokens) : m_tokens(c_tokens) {}
 	}
 }
 
-[[nodiscard]] FuncDecl Parser::parse_func_decl()
+FuncDecl Parser::parse_func_decl()
 {
 	if (peek().get_type() == TokenType::c_paren &&
 		peek(1).get_type() == TokenType::o_bracket)
@@ -52,16 +52,12 @@ Parser::Parser(const std::vector<Token>& c_tokens) : m_tokens(c_tokens) {}
 
 		advance(2);
 
-		while (peek().get_type() != TokenType::eof)
+		while (peek().get_type() != TokenType::c_bracket)
 		{
 			if (peek().get_type() == TokenType::return_)
 			{
 				advance();
 				func_decl.m_body.push_back(parse_stmt());
-			}
-			else if (peek().get_type() == TokenType::c_bracket)
-			{
-				break;
 			}
 			else
 			{
@@ -96,7 +92,7 @@ void Parser::parse_program()
 	}
 }
 
-[[nodiscard]] Token Parser::peek(const std::size_t c_offset) const
+Token Parser::peek(const std::size_t c_offset) const
 {
 	if (m_index + c_offset < m_tokens.size())
 	{
@@ -115,5 +111,5 @@ Token Parser::advance(const std::size_t c_distance)
 	throw std::out_of_range("Nex : Advance offset out of range");
 }
 
-[[nodiscard]] std::vector<Token> Parser::get_tokens() const { return m_tokens; }
-[[nodiscard]] Program Parser::get_program()           const { return m_program; }
+std::vector<Token> Parser::get_tokens() const { return m_tokens; }
+Program Parser::get_program()           const { return m_program; }

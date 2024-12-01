@@ -18,13 +18,27 @@ std::ostream& operator<<(std::ostream& os, const Token& c_token)
     return os;
 }
 
-[[nodiscard]] std::string Token::get_value() const { return m_value; }
-[[nodiscard]] TokenType Token::get_type()    const { return m_type; }
+std::string Token::get_value() const
+{
+    return m_value; 
+}
 
-[[nodiscard]] bool is_skippable(const char c_c) { return c_c == ' ' || c_c == '\n' || c_c == '\t'; }
-[[nodiscard]] std::string ctos(const char c_c)  { return std::string(1, c_c); }
+TokenType Token::get_type() const 
+{
+    return m_type; 
+}
 
-[[nodiscard]] std::string to_string(const TokenType c_token_type)
+bool is_skippable(const char c_c) 
+{
+    return c_c == ' ' || c_c == '\n' || c_c == '\t'; 
+}
+
+std::string ctos(const char c_c) 
+{
+    return std::string(1, c_c); 
+}
+
+std::string to_string(const TokenType c_token_type)
 {
     switch (c_token_type)
     {
@@ -33,13 +47,15 @@ std::ostream& operator<<(std::ostream& os, const Token& c_token)
     case (TokenType::semi):       return "semi";
     case (TokenType::equals):     return "equals";
     case (TokenType::add):        return "add";
-    case (TokenType::subtract):   return "subtract";
     case (TokenType::multiply):   return "multiply";
     case (TokenType::divide):     return "divide";
     case (TokenType::o_paren):    return "o_paren";
     case (TokenType::c_paren):    return "c_paren";
     case (TokenType::o_bracket):  return "o_bracket";
     case (TokenType::c_bracket):  return "c_bracket";
+    case (TokenType::neg):        return "neg";
+    case (TokenType::b_compl):    return "b_compl";
+    case (TokenType::l_neg):      return "l_neg";
     case (TokenType::int_):       return "int";
     case (TokenType::return_):    return "return";
     case (TokenType::eof):        return "eof";
@@ -47,7 +63,7 @@ std::ostream& operator<<(std::ostream& os, const Token& c_token)
     }
 }
 
-[[nodiscard]] std::vector<Token> tokenize(std::string& source)
+std::vector<Token> tokenize(std::string& source)
 {
     source += " ";
 
@@ -72,9 +88,11 @@ std::ostream& operator<<(std::ostream& os, const Token& c_token)
                 case (';'): tokens.push_back({ ctos(current), TokenType::semi });      break;
                 case ('='): tokens.push_back({ ctos(current), TokenType::equals });    break;
                 case ('+'): tokens.push_back({ ctos(current), TokenType::add });       break;
-                case ('-'): tokens.push_back({ ctos(current), TokenType::subtract });  break;
                 case ('*'): tokens.push_back({ ctos(current), TokenType::multiply });  break;
                 case ('/'): tokens.push_back({ ctos(current), TokenType::divide });    break;
+                case ('-'): tokens.push_back({ ctos(current), TokenType::neg });       break;
+                case ('~'): tokens.push_back({ ctos(current), TokenType::b_compl });   break;
+                case ('!'): tokens.push_back({ ctos(current), TokenType::l_neg });     break;
                 default:
                     if (std::isdigit(current))
                     {

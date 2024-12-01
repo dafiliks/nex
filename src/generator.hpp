@@ -11,7 +11,7 @@ public:
 	void gen_expr(const Expr& c_expr);
 	void gen_stmt(const Stmt& c_stmt);
 	void gen_func_decl(const FuncDecl& c_func_decl);
-	[[nodiscard]] std::string gen_program();
+	std::string gen_program();
 private:
 	Program m_program{};
 	std::string m_output{};

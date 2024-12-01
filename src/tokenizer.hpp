@@ -15,7 +15,6 @@ enum class TokenType
     equals,
 
     add,
-    subtract,
     multiply,
     divide,
 
@@ -23,6 +22,10 @@ enum class TokenType
     c_paren,
     o_bracket,
     c_bracket,
+
+    neg,
+    b_compl,
+    l_neg,
 
     int_,
     return_,
@@ -38,17 +41,17 @@ public:
     Token(const std::string& c_value, const TokenType& c_type);
     friend std::ostream& operator<<(std::ostream& os, const Token& c_token); 
 
-    [[nodiscard]] std::string get_value() const;
-    [[nodiscard]] TokenType get_type() const;
+    std::string get_value() const;
+    TokenType get_type() const;
 private:
     std::string m_value{};
     TokenType m_type{};
 };
 
-[[nodiscard]] bool is_skippable(const char c_c);
-[[nodiscard]] std::string ctos(const char c_c);
+bool is_skippable(const char c_c);
+std::string ctos(const char c_c);
 
-[[nodiscard]] std::string to_string(const TokenType c_token_type);
-[[nodiscard]] std::vector<Token> tokenize(std::string& source);
+std::string to_string(const TokenType c_token_type);
+std::vector<Token> tokenize(std::string& source);
 
 #endif
