@@ -7,49 +7,59 @@ Parser::Parser(const std::vector<Token>& c_tokens) : m_tokens(c_tokens) {}
 
 Expr Parser::parse_expr()
 {
+	Expr expr{};
+
 	if (peek().get_type() == TokenType::int_lit)
 	{
-		Expr expr{ .m_int_lit = std::stoi(peek().get_value())};
+		expr.m_expr_v = Normal(std::stoi(peek().get_value()));
 
 		advance();
+	}
+	else if (peek().get_type() == TokenType::neg)
+	{
+		advance(); 
 
-		return expr;
+		expr.m_expr_v = std::make_shared<UnOp>(TokenType::neg, std::make_shared<Expr>(parse_expr()));
 	}
 	else
 	{
 		std::cerr << "Nex : parsing expression failed\n";
 		exit(EXIT_FAILURE);
 	}
+
+	return expr;
 }
 
 Stmt Parser::parse_stmt()
 {
+	Stmt stmt{};
+
 	if (peek().get_type() == TokenType::int_lit)
 	{
-
-		Expr return_expr{ parse_expr() };
-		return_expr.m_expr_type = ExprType::return_;
-		Stmt stmt{ .m_expr = return_expr };
-
+		stmt.m_expr = parse_expr();
 		advance();
-
-		return stmt;
+	}
+	else if (peek().get_type() == TokenType::neg)
+	{
+		stmt.m_expr = parse_expr();
+		advance();
 	}
 	else
 	{
 		std::cerr << "Nex : parsing statement failed\n";
 		exit(EXIT_FAILURE);
 	}
+
+	return stmt;
 }
 
 FuncDecl Parser::parse_func_decl()
 {
-	if (peek().get_type() == TokenType::c_paren &&
-		peek(1).get_type() == TokenType::o_bracket)
-	{
-		FuncDecl func_decl{};
-		func_decl.m_name = peek(-2).get_value();
+	FuncDecl func_decl{};
 
+	if (peek().get_type() == TokenType::c_paren && peek(1).get_type() == TokenType::o_bracket)
+	{
+		func_decl.m_name = peek(-2).get_value();
 		advance(2);
 
 		while (peek().get_type() != TokenType::c_bracket)
@@ -64,14 +74,14 @@ FuncDecl Parser::parse_func_decl()
 				advance();
 			}
 		}
-
-		return func_decl;
 	}
 	else
 	{
 		std::cerr << "Nex : parsing function declaration failed\n";
 		exit(EXIT_FAILURE);
 	}
+
+	return func_decl;
 }
 
 void Parser::parse_program()
@@ -111,5 +121,12 @@ Token Parser::advance(const std::size_t c_distance)
 	throw std::out_of_range("Nex : Advance offset out of range");
 }
 
-std::vector<Token> Parser::get_tokens() const { return m_tokens; }
-Program Parser::get_program()           const { return m_program; }
+std::vector<Token> Parser::get_tokens() const
+{
+	return m_tokens; 
+}
+
+Program Parser::get_program() const 
+{
+	return m_program; 
+}

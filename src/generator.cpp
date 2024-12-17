@@ -6,9 +6,9 @@ Generator::Generator(const Program& c_program) : m_program(c_program) {}
 
 void Generator::gen_expr(const Expr& c_expr)
 {
-    if (c_expr.m_expr_type == ExprType::return_)
+    if (std::holds_alternative<Return>(c_expr.m_expr_v))
     {
-        m_output += "   movl    $" + std::to_string(c_expr.m_int_lit) + ", %eax\n";
+        m_output += "   movl    $" + std::to_string(std::get<Return>(c_expr.m_expr_v).m_constant) + ", %eax\n";
         m_output += "   ret\n";
     }
 }

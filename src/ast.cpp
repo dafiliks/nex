@@ -6,16 +6,17 @@
 void print_expr(const Expr& c_expr)
 {
     std::cout << "Expr: { Type: ";
-    switch (c_expr.m_expr_type)
+
+    if (std::holds_alternative<Return>(c_expr.m_expr_v))
     {
-    case (ExprType::normal):
-        std::cout << "Normal";
-        break;
-    case (ExprType::return_):
-        std::cout << "Return";
-        break;
+        std::cout << "ReturnExpr: { Constant: " << std::get<Return>(c_expr.m_expr_v).m_constant << " }";
     }
-    std::cout << ", IntLit: " << c_expr.m_int_lit << " }";
+    else 
+    {
+        printf("else");
+    }
+
+    std::cout << " }";
 }
 
 void print_stmt(const Stmt& c_stmt)
