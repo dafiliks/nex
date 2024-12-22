@@ -11,15 +11,15 @@ Expr Parser::parse_expr()
 
 	if (peek().get_type() == TokenType::int_lit)
 	{
-		expr.m_expr_v = Normal(std::stoi(peek().get_value()));
+		expr.m_expr_v = Return(std::stoi(peek().get_value()));
 
 		advance();
 	}
-	else if (peek().get_type() == TokenType::neg)
+	else if (peek().get_type() == TokenType::neg || peek().get_type() == TokenType::l_neg || peek().get_type() == TokenType::b_compl)
 	{
 		advance(); 
-
-		expr.m_expr_v = std::make_shared<UnOp>(TokenType::neg, std::make_shared<Expr>(parse_expr()));
+        std::cout << to_string(peek(-1).get_type()) << "\n";
+		expr.m_expr_v = std::make_shared<UnOp>(peek(-2).get_type(), std::make_shared<Expr>(parse_expr()));
 	}
 	else
 	{
@@ -39,7 +39,7 @@ Stmt Parser::parse_stmt()
 		stmt.m_expr = parse_expr();
 		advance();
 	}
-	else if (peek().get_type() == TokenType::neg)
+	else if (peek().get_type() == TokenType::neg || peek().get_type() == TokenType::l_neg || peek().get_type() == TokenType::b_compl)
 	{
 		stmt.m_expr = parse_expr();
 		advance();

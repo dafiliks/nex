@@ -42,14 +42,14 @@ void print_program(const Program& c_program)
     std::cout << "Program: [ ";
     for (const auto& item : c_program.m_body)
     {
-        std::visit([](auto&& arg)
-            {
-                using T = std::decay_t<decltype(arg)>;
-                if constexpr (std::is_same_v<T, FuncDecl>)
-                    print_func_decl(arg);
-                else if constexpr (std::is_same_v<T, Stmt>)
-                    print_stmt(arg);
-            }, item);
+        if (std::holds_alternative<FuncDecl>(item))
+        {
+            print_func_decl(std::get<FuncDecl>(item));
+        }
+        else if (std::holds_alternative<Stmt>(item))
+        {
+            print_stmt(std::get<Stmt>(item));
+        }
         std::cout << " ";
     }
     std::cout << "]\n";

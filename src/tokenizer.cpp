@@ -42,24 +42,59 @@ std::string to_string(const TokenType c_token_type)
 {
     switch (c_token_type)
     {
-    case (TokenType::int_lit):    return "int_lit";
-    case (TokenType::identifier): return "identifier";
-    case (TokenType::semi):       return "semi";
-    case (TokenType::equals):     return "equals";
-    case (TokenType::add):        return "add";
-    case (TokenType::multiply):   return "multiply";
-    case (TokenType::divide):     return "divide";
-    case (TokenType::o_paren):    return "o_paren";
-    case (TokenType::c_paren):    return "c_paren";
-    case (TokenType::o_bracket):  return "o_bracket";
-    case (TokenType::c_bracket):  return "c_bracket";
-    case (TokenType::neg):        return "neg";
-    case (TokenType::b_compl):    return "b_compl";
-    case (TokenType::l_neg):      return "l_neg";
-    case (TokenType::int_):       return "int";
-    case (TokenType::return_):    return "return";
-    case (TokenType::eof):        return "eof";
-    default:                      return "unknown";
+    case (TokenType::int_lit):
+        return "int_lit";
+
+    case (TokenType::identifier): 
+        return "identifier";
+
+    case (TokenType::semi):
+        return "semi";
+
+    case (TokenType::equals):
+        return "equals";
+
+    case (TokenType::add):
+        return "add";
+
+    case (TokenType::multiply):
+        return "multiply";
+
+    case (TokenType::divide):
+        return "divide";
+
+    case (TokenType::o_paren):
+        return "o_paren";
+
+    case (TokenType::c_paren):
+        return "c_paren";
+
+    case (TokenType::o_bracket):
+        return "o_bracket";
+
+    case (TokenType::c_bracket):
+        return "c_bracket";
+
+    case (TokenType::neg):
+        return "neg";
+
+    case (TokenType::b_compl):
+        return "b_compl";
+
+    case (TokenType::l_neg):
+        return "l_neg";
+
+    case (TokenType::int_):
+        return "int";
+
+    case (TokenType::return_):
+        return "return";
+
+    case (TokenType::eof):
+        return "eof";
+
+    default:
+        return "unknown";
     }
 }
 
@@ -81,18 +116,54 @@ std::vector<Token> tokenize(std::string& source)
             {
                 switch (current)
                 {
-                case ('('): tokens.push_back({ ctos(current), TokenType::o_paren });   break;
-                case (')'): tokens.push_back({ ctos(current), TokenType::c_paren });   break;
-                case ('{'): tokens.push_back({ ctos(current), TokenType::o_bracket }); break;
-                case ('}'): tokens.push_back({ ctos(current), TokenType::c_bracket }); break;
-                case (';'): tokens.push_back({ ctos(current), TokenType::semi });      break;
-                case ('='): tokens.push_back({ ctos(current), TokenType::equals });    break;
-                case ('+'): tokens.push_back({ ctos(current), TokenType::add });       break;
-                case ('*'): tokens.push_back({ ctos(current), TokenType::multiply });  break;
-                case ('/'): tokens.push_back({ ctos(current), TokenType::divide });    break;
-                case ('-'): tokens.push_back({ ctos(current), TokenType::neg });       break;
-                case ('~'): tokens.push_back({ ctos(current), TokenType::b_compl });   break;
-                case ('!'): tokens.push_back({ ctos(current), TokenType::l_neg });     break;
+                case ('('): 
+                    tokens.push_back({ ctos(current), TokenType::o_paren });   
+                    break;
+
+                case (')'): 
+                    tokens.push_back({ ctos(current), TokenType::c_paren });
+                    break;
+
+                case ('{'):
+                    tokens.push_back({ ctos(current), TokenType::o_bracket });
+                    break;
+
+                case ('}'):
+                    tokens.push_back({ ctos(current), TokenType::c_bracket });
+                    break;
+
+                case (';'):
+                    tokens.push_back({ ctos(current), TokenType::semi });
+                    break;
+
+                case ('='):
+                    tokens.push_back({ ctos(current), TokenType::equals });
+                    break;
+
+                case ('+'):
+                    tokens.push_back({ ctos(current), TokenType::add });
+                    break;
+
+                case ('*'):
+                    tokens.push_back({ ctos(current), TokenType::multiply });
+                    break;
+
+                case ('/'):
+                    tokens.push_back({ ctos(current), TokenType::divide });
+                    break;
+
+                case ('-'):
+                    tokens.push_back({ ctos(current), TokenType::neg });
+                    break;
+
+                case ('~'):
+                    tokens.push_back({ ctos(current), TokenType::b_compl });
+                    break;
+
+                case ('!'):
+                    tokens.push_back({ ctos(current), TokenType::l_neg });
+                    break;
+
                 default:
                     if (std::isdigit(current))
                     {
