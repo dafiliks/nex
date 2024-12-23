@@ -12,50 +12,31 @@ int main(int argc, char* argv[])
 {
     std::vector<Token> tokens{};
 
-    if (argc == 2)
+    while (true)
     {
-        std::ifstream file(argv[2]);
-        std::string str((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+        std::string input{};
+        std::cout << "> ";
+        std::getline(std::cin, input);
 
-        tokens = tokenize(str);
-    }
-    else
-    {
-        std::cout << "nex v1.0\n";
-        while (true)
+        tokens = tokenize(input);
+
+        std::cout << "\n";
+
+        for (const Token& token : tokens)
         {
-            std::string input{};
-            std::cout << "> ";
-            std::getline(std::cin, input);
-
-            tokens = tokenize(input);
-
-            for (const Token& token : tokens)
-            {
-                std::cout << token << "\n";
-            }
-
-            Parser parser{ tokens };
-            parser.parse_program();
-            print_program(parser.get_program());
-
-            Generator generator{ parser.get_program() };
-            std::cout << generator.gen_program();
-
+            std::cout << token << "\n";
         }
+
+        Parser parser{ tokens };
+        parser.parse_program();
+
+        std::cout << "\n";
+
+        print_program(parser.get_program());
+
+        Generator generator{ parser.get_program() };
+        std::cout << "\n" << generator.gen_program() << "\n\n";
     }
-
-    for (const Token& token : tokens)
-    {
-        std::cout << token << "\n";
-    }
-
-    Parser parser{ tokens };
-    parser.parse_program();
-    print_program(parser.get_program());
-
-    Generator generator{ parser.get_program() };
-    std::cout << generator.gen_program();
 
     return 0;
 }

@@ -15,6 +15,8 @@ public:
 private:
 	Program m_program{};
 	std::string m_output{};
+	
+	int m_neg_count{}, m_dec_count{}, m_comp_count{};
 };
 
 #endif

@@ -30,7 +30,7 @@ struct UnOp
     TokenType m_op{};
     std::shared_ptr<Expr> m_expr{};
 
-    UnOp(const TokenType c_op, const std::shared_ptr<Expr> c_expr) : m_op(c_op), m_expr(c_expr) {}
+    UnOp(const TokenType c_op, const std::shared_ptr<Expr> c_expr);
 };
 
 struct Stmt

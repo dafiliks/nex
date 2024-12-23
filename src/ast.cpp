@@ -3,6 +3,8 @@
 
 #include "ast.hpp"
 
+UnOp::UnOp(const TokenType c_op, const std::shared_ptr<Expr> c_expr) : m_op(c_op), m_expr(c_expr) {};
+
 void print_expr(const Expr& c_expr)
 {
     std::cout << "Expr: { Type: ";
@@ -11,9 +13,11 @@ void print_expr(const Expr& c_expr)
     {
         std::cout << "ReturnExpr: { Constant: " << std::get<Return>(c_expr.m_expr_v).m_constant << " }";
     }
-    else 
+    else if (std::holds_alternative<std::shared_ptr<UnOp>>(c_expr.m_expr_v)) 
     {
-        printf("else");
+        std::cout << "\nUnOp { Type: " << to_string(std::get<std::shared_ptr<UnOp>>(c_expr.m_expr_v)->m_op) << ", Expr: ";
+        print_expr(*std::get<std::shared_ptr<UnOp>>(c_expr.m_expr_v)->m_expr);
+        std::cout << " }";
     }
 
     std::cout << " }";

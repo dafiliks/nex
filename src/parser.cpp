@@ -12,18 +12,31 @@ Expr Parser::parse_expr()
 	if (peek().get_type() == TokenType::int_lit)
 	{
 		expr.m_expr_v = Return(std::stoi(peek().get_value()));
-
 		advance();
 	}
-	else if (peek().get_type() == TokenType::neg || peek().get_type() == TokenType::l_neg || peek().get_type() == TokenType::b_compl)
+	else if (peek().get_type() == TokenType::neg)
 	{
-		advance(); 
-        std::cout << to_string(peek(-1).get_type()) << "\n";
-		expr.m_expr_v = std::make_shared<UnOp>(peek(-2).get_type(), std::make_shared<Expr>(parse_expr()));
+		advance();
+		expr.m_expr_v = std::make_shared<UnOp>(TokenType::neg, std::make_shared<Expr>(parse_expr()));
+	}
+	else if (peek().get_type() == TokenType::dec)
+	{
+		advance();
+		expr.m_expr_v = std::make_shared<UnOp>(TokenType::dec, std::make_shared<Expr>(parse_expr()));
+	}
+	else if (peek().get_type() == TokenType::l_neg)
+	{
+		advance();
+		expr.m_expr_v = std::make_shared<UnOp>(TokenType::l_neg, std::make_shared<Expr>(parse_expr()));
+	}
+	else if (peek().get_type() == TokenType::comp)
+	{
+		advance();
+		expr.m_expr_v = std::make_shared<UnOp>(TokenType::comp, std::make_shared<Expr>(parse_expr()));
 	}
 	else
 	{
-		std::cerr << "Nex : parsing expression failed\n";
+		std::cerr << "Parsing expression failed\n";
 		exit(EXIT_FAILURE);
 	}
 
@@ -34,19 +47,16 @@ Stmt Parser::parse_stmt()
 {
 	Stmt stmt{};
 
-	if (peek().get_type() == TokenType::int_lit)
-	{
-		stmt.m_expr = parse_expr();
-		advance();
-	}
-	else if (peek().get_type() == TokenType::neg || peek().get_type() == TokenType::l_neg || peek().get_type() == TokenType::b_compl)
+	if (peek().get_type() == TokenType::int_lit || peek().get_type() == TokenType::neg ||
+	    peek().get_type() == TokenType::dec || peek().get_type() == TokenType::l_neg ||
+	    peek().get_type() == TokenType::comp)
 	{
 		stmt.m_expr = parse_expr();
 		advance();
 	}
 	else
 	{
-		std::cerr << "Nex : parsing statement failed\n";
+		std::cerr << "Parsing statement failed\n";
 		exit(EXIT_FAILURE);
 	}
 
@@ -77,7 +87,7 @@ FuncDecl Parser::parse_func_decl()
 	}
 	else
 	{
-		std::cerr << "Nex : parsing function declaration failed\n";
+		std::cerr << "Parsing function declaration failed\n";
 		exit(EXIT_FAILURE);
 	}
 
@@ -88,9 +98,8 @@ void Parser::parse_program()
 {
 	while (peek().get_type() != TokenType::eof)
 	{
-		if (peek().get_type() == TokenType::int_ &&
-			peek(1).get_type() == TokenType::identifier &&
-			peek(2).get_type() == TokenType::o_paren)
+		if (peek().get_type() == TokenType::int_ && peek(1).get_type() == TokenType::identifier &&
+		    peek(2).get_type() == TokenType::o_paren)
 		{
 			advance(3);
 			m_program.m_body.push_back(parse_func_decl());
@@ -108,7 +117,7 @@ Token Parser::peek(const std::size_t c_offset) const
 	{
 		return m_tokens.at(m_index + c_offset);
 	}
-	throw std::out_of_range("Nex : Peek offset out of range");
+	throw std::out_of_range("Peek offset out of range");
 }
 
 Token Parser::advance(const std::size_t c_distance)
@@ -118,7 +127,7 @@ Token Parser::advance(const std::size_t c_distance)
 		m_index += c_distance;
 		return m_tokens.at(m_index);
 	}
-	throw std::out_of_range("Nex : Advance offset out of range");
+	throw std::out_of_range("Advance offset out of range");
 }
 
 std::vector<Token> Parser::get_tokens() const

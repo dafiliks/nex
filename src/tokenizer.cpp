@@ -1,14 +1,9 @@
 #include <cctype>
 #include <cstdlib>
 #include <iostream>
+#include <map>
 
 #include "tokenizer.hpp"
-
-const std::unordered_map<std::string, TokenType> c_keywords
-{
-    {"return", TokenType::return_},
-    {"int",    TokenType::int_}
-};
 
 Token::Token(const std::string& c_value, const TokenType& c_type) : m_value(c_value), m_type(c_type) {}
 
@@ -33,69 +28,19 @@ bool is_skippable(const char c_c)
     return c_c == ' ' || c_c == '\n' || c_c == '\t'; 
 }
 
-std::string ctos(const char c_c) 
+std::string char_to_string(const char c_c) 
 {
     return std::string(1, c_c); 
 }
 
 std::string to_string(const TokenType c_token_type)
 {
-    switch (c_token_type)
+    auto token = c_token_names.find(c_token_type);
+    if (token != c_token_names.end())
     {
-    case (TokenType::int_lit):
-        return "int_lit";
-
-    case (TokenType::identifier): 
-        return "identifier";
-
-    case (TokenType::semi):
-        return "semi";
-
-    case (TokenType::equals):
-        return "equals";
-
-    case (TokenType::add):
-        return "add";
-
-    case (TokenType::multiply):
-        return "multiply";
-
-    case (TokenType::divide):
-        return "divide";
-
-    case (TokenType::o_paren):
-        return "o_paren";
-
-    case (TokenType::c_paren):
-        return "c_paren";
-
-    case (TokenType::o_bracket):
-        return "o_bracket";
-
-    case (TokenType::c_bracket):
-        return "c_bracket";
-
-    case (TokenType::neg):
-        return "neg";
-
-    case (TokenType::b_compl):
-        return "b_compl";
-
-    case (TokenType::l_neg):
-        return "l_neg";
-
-    case (TokenType::int_):
-        return "int";
-
-    case (TokenType::return_):
-        return "return";
-
-    case (TokenType::eof):
-        return "eof";
-
-    default:
-        return "unknown";
+        return token->second;
     }
+    return "Token unknown";
 }
 
 std::vector<Token> tokenize(std::string& source)
@@ -114,57 +59,20 @@ std::vector<Token> tokenize(std::string& source)
 
             if (!is_skippable(current))
             {
-                switch (current)
+                if (current == '-' && next == '-')
                 {
-                case ('('): 
-                    tokens.push_back({ ctos(current), TokenType::o_paren });   
-                    break;
+                    tokens.push_back({ "--", TokenType::dec });
+                    i++;
+                    continue;
+                }
 
-                case (')'): 
-                    tokens.push_back({ ctos(current), TokenType::c_paren });
-                    break;
-
-                case ('{'):
-                    tokens.push_back({ ctos(current), TokenType::o_bracket });
-                    break;
-
-                case ('}'):
-                    tokens.push_back({ ctos(current), TokenType::c_bracket });
-                    break;
-
-                case (';'):
-                    tokens.push_back({ ctos(current), TokenType::semi });
-                    break;
-
-                case ('='):
-                    tokens.push_back({ ctos(current), TokenType::equals });
-                    break;
-
-                case ('+'):
-                    tokens.push_back({ ctos(current), TokenType::add });
-                    break;
-
-                case ('*'):
-                    tokens.push_back({ ctos(current), TokenType::multiply });
-                    break;
-
-                case ('/'):
-                    tokens.push_back({ ctos(current), TokenType::divide });
-                    break;
-
-                case ('-'):
-                    tokens.push_back({ ctos(current), TokenType::neg });
-                    break;
-
-                case ('~'):
-                    tokens.push_back({ ctos(current), TokenType::b_compl });
-                    break;
-
-                case ('!'):
-                    tokens.push_back({ ctos(current), TokenType::l_neg });
-                    break;
-
-                default:
+                auto token = c_single_char_tokens.find(current);
+                if (token != c_single_char_tokens.end())
+                {
+                    tokens.push_back({ char_to_string(current), token->second });
+                }
+                else
+                {
                     if (std::isdigit(current))
                     {
                         buffer += current;
@@ -179,8 +87,8 @@ std::vector<Token> tokenize(std::string& source)
                         buffer += current;
                         if (!std::isalpha(next))
                         {
-                            auto reserved = c_keywords.find(buffer);
-                            if (reserved != c_keywords.end())
+                            auto reserved = c_nex_keywords.find(buffer);
+                            if (reserved != c_nex_keywords.end())
                             {
                                 tokens.push_back({ buffer, reserved->second });
                             }
@@ -193,11 +101,11 @@ std::vector<Token> tokenize(std::string& source)
                     }
                     else
                     {
-                        std::cerr << "Nex : no matching token found for \"" << current << "\"\n";
+                        std::cerr << "No matching token found for \"" << current << "\"\n";
                         exit(EXIT_FAILURE);
                     }
                 }
-
+                
             }
         }
     }
