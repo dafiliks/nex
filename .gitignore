@@ -36,3 +36,5 @@ build/
 .vscode/
 out/
 .vs/
+src/CMakeFiles/
+src/Makefile
