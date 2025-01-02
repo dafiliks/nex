@@ -1,17 +1,16 @@
 # Documentation
 
-So far, the BNF for Nex Lang is as follows: 
-```bnf
-<program> ::= <funcdecl>
-<funcdecl> ::= "int" <name> "(" ")" "{" <stmt> "}"
-<stmt> ::= "return" <expr> ";"
-<expr> ::= <int>
-```
+A simple application in Nex Lang:
+```nex
+# this is a comment!
 
-A simple application that returns 22 would look like:
-```c
-int main() {
-    return 22; // unary ops can be used on return value 
+#$ multiline 
+comment $
+
+fn main() {
+    var x = 50;
+    var y = 20;
+    esc x; # exits with 50
 }
 ```
 
