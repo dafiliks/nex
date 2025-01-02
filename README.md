@@ -6,6 +6,33 @@ Nex Lang is an experimental (toy) programming language written in C++, that was 
 
 I undertook this project as I was interested in how compilers work, and so far the experience has been rewarding and interesting. Although it was very tempting, I have decided to not continue using LLVM for code generation as I wanted to use this project to get better at reading and writing assembly code. I am trying to build this project entirely from scratch, therefore, most things will be found out through trial and error, so don't expect the implementation to be perfect.
 
+# Example
+
+A simple application in Nex Lang could look like the below.
+```nex-lang
+# main.nex
+
+# main function (mandatory in Nex Lang)
+fn main() {
+    # initialising variables
+    var foo = 200;
+    var bar = 600;
+
+    # infinite loop
+    set label;
+    go label;
+
+    # exit with code 200
+    esc foo;
+}
+
+# random function
+fn returner() {
+    # return 200
+    ret 200;
+}
+```
+
 # Info
 
 ### Assembly
