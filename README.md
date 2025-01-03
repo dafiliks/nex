@@ -26,10 +26,10 @@ fn main() {
     esc foo;
 }
 
-# random function
-fn returner() {
-    # return 200
-    ret 200;
+# another function
+fn test() {
+    # do some maths and then return the result
+    ret 5 + 10 * 2;
 }
 ```
 
