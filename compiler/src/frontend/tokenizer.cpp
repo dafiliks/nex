@@ -14,52 +14,8 @@ TokenType Token::get_type() const {
     return m_type;
 }
 
-bool is_skippable(const char c) {
-    return c == ' ' || c == '\n' || c == '\t';
-}
-
-char string_to_char(std::string& s) {
-    if (s.size() == 1) {
-        return s.at(0);
-    }
-    throw std::runtime_error("String is longer than 1 character");
-}
-
-std::string char_to_string(const char c) {
-    return std::string(1, c);
-}
-
-std::string to_string(const TokenType token_type) {
-    auto match{token_names.find(token_type)};
-    if (match != token_names.end()) {
-        return match->second;
-    }
-    throw std::runtime_error("Token unknown");
-}
-
 Tokenizer::Tokenizer(const std::string& src) : m_src(src) {
     m_src += '\0';
-}
-
-std::vector<Token> Tokenizer::get_tokens() const {
-    return m_tokens;
-}
-
-char Tokenizer::peek(const std::size_t offset) const {
-    if (m_index + offset < m_src.size()) {
-        return m_src.at(m_index + offset);
-    } else {
-        throw std::out_of_range("Tokenizer peek offset out of range");
-    }
-}
-
-char Tokenizer::consume(const std::size_t distance) {
-    if (m_index + distance < m_src.size()) {
-        m_index += distance;
-        return m_src.at(m_index - distance);
-    } else {
-        throw std::out_of_range("Tokenizer consume distance out of range");
-    }
 }
 
 std::vector<Token> Tokenizer::tokenize() {
@@ -97,7 +53,7 @@ std::vector<Token> Tokenizer::tokenize() {
                         while (peek() != '\n' && peek() != '\0');
                     }
                 } else {
-                    throw std::runtime_error("No matching token found");
+                    tokenizer_rt_error("No matching token found");
                 }
             }
         } else {
@@ -106,4 +62,52 @@ std::vector<Token> Tokenizer::tokenize() {
     }
     m_tokens.push_back({"eof", TokenType::eof});
     return m_tokens;
+}
+
+char Tokenizer::peek(const std::size_t offset) const {
+    if (m_index + offset < m_src.size()) {
+        return m_src.at(m_index + offset);
+    } else {
+        tokenizer_rt_error("Peek offset out of range");
+    }
+}
+
+char Tokenizer::consume(const std::size_t distance) {
+    if (m_index + distance < m_src.size()) {
+        m_index += distance;
+        return m_src.at(m_index - distance);
+    } else {
+        tokenizer_rt_error("Consume distance out of range");
+    }
+}
+
+std::vector<Token> Tokenizer::get_tokens() const {
+    return m_tokens;
+}
+
+void tokenizer_rt_error(const std::string& err_message) {
+    throw std::runtime_error("Nex: Tokenizer -> " + err_message);
+}
+
+bool is_skippable(const char c) {
+    return c == ' ' || c == '\n' || c == '\t';
+}
+
+char string_to_char(const std::string& s) {
+    if (s.size() == 1) {
+        return s.at(0);
+    }
+    tokenizer_rt_error("String longer than 1 char");
+}
+
+std::string char_to_string(const char c) {
+    return std::string(1, c);
+}
+
+std::string to_string(const TokenType token_type) {
+    auto match{token_names.find(token_type)};
+    if (match != token_names.end()) {
+        return match->second;
+    }
+    tokenizer_rt_error("Token unknown");
 }

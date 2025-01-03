@@ -1,98 +1,137 @@
 #include <stdexcept>
-#include <variant>
+#include <unordered_map>
 #include "generator.hpp"
 
 Generator::Generator(const Program &program) : m_program(program) {}
 
+void Generator::gen_term(const TermExpr& term) {
+    struct TermVisitor {
+        Generator& m_gen;
+        void operator()(IntExpr int_expr) {
+            m_gen.m_output << "   mov rax, " << int_expr.m_value << "\n";
+            m_gen.push("rax");
+        }
+        void operator()(IdentExpr ident_expr) {
+            if (existing_vars.contains(ident_expr.m_ident)) {
+                auto var{existing_vars.at(ident_expr.m_ident)};
+                std::stringstream reg{};
+                reg << "QWORD [rsp + " << (m_gen.m_stack_size - var.m_stack_loc - 1) * 8 << "]";
+                m_gen.push(reg.str());
+            } else {
+                m_gen.gen_rt_error("Variable undefined");
+            }
+        }
+    };
+    TermVisitor visitor{*this};
+    std::visit(visitor, term.m_term);
+}
+
 void Generator::gen_expr(const Expr& expr) {
-    if (std::holds_alternative<IntExpr>(expr.m_value)) {
-        m_output << "   mov rax, " << std::get<IntExpr>(expr.m_value).m_value << "\n";
-        push("rax");
-    } else if (std::holds_alternative<IdentExpr>(expr.m_value)) {
-        if (existing_vars.contains(std::get<IdentExpr>(expr.m_value).m_ident)) {
-            auto var = existing_vars.at(std::get<IdentExpr>(expr.m_value).m_ident);
-            std::stringstream offset{};
-            offset << "QWORD [rsp + " << (m_stack_size - var.m_stack_loc - 1) * 8 << "]";
-            push(offset.str());
-        } else {
-            throw std::runtime_error("No such variable exists");
+    struct ExprVisitor {
+        Generator& m_gen;
+        void operator()(TermExpr term_expr) {
+            m_gen.gen_term(term_expr);
         }
-    } else if (std::holds_alternative<BinOpExpr>(expr.m_value)) {
-        if (std::get<BinOpExpr>(expr.m_value).m_op == "+") {
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_lhs);
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_rhs);
-            pop("rbx");
-            pop("rax");
-            m_output << "   add rax, rbx\n";
-            push("rax");
+        void operator()(BinOpExpr bin_op_expr) {
+            if (bin_op_expr.m_op == "+") {
+                m_gen.gen_expr(*bin_op_expr.m_lhs);
+                m_gen.gen_expr(*bin_op_expr.m_rhs);
+                m_gen.pop("rbx");
+                m_gen.pop("rax");
+                m_gen.m_output << "   add rax, rbx\n";
+                m_gen.push("rax");
+            }
+            else if (bin_op_expr.m_op == "-") {
+                m_gen.gen_expr(*bin_op_expr.m_lhs);
+                m_gen.gen_expr(*bin_op_expr.m_rhs);
+                m_gen.pop("rbx");
+                m_gen.pop("rax");
+                m_gen.m_output << "   sub rax, rbx\n";
+                m_gen.push("rax");
+            }
+            else if (bin_op_expr.m_op == "*") {
+                m_gen.gen_expr(*bin_op_expr.m_lhs);
+                m_gen.gen_expr(*bin_op_expr.m_rhs);
+                m_gen.pop("rbx");
+                m_gen.pop("rax");
+                m_gen.m_output << "   mul rbx\n";
+                m_gen.push("rax");
+            }
+            else if (bin_op_expr.m_op == "/") {
+                m_gen.gen_expr(*bin_op_expr.m_lhs);
+                m_gen.gen_expr(*bin_op_expr.m_rhs);
+                m_gen.pop("rbx");
+                m_gen.pop("rax");
+                m_gen.m_output << "   div rbx\n";
+                m_gen.push("rax");
+            }
         }
-        else if (std::get<BinOpExpr>(expr.m_value).m_op == "-") {
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_lhs);
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_rhs);
-            pop("rbx");
-            pop("rax");
-            m_output << "   sub rax, rbx\n";
-            push("rax");
-        }
-        else if (std::get<BinOpExpr>(expr.m_value).m_op == "*") {
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_lhs);
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_rhs);
-            pop("rbx");
-            pop("rax");
-            m_output << "   mul rbx\n";
-            push("rax");
-        }
-        else if (std::get<BinOpExpr>(expr.m_value).m_op == "/") {
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_lhs);
-            gen_expr(*std::get<BinOpExpr>(expr.m_value).m_rhs);
-            pop("rbx");
-            pop("rax");
-            m_output << "   div rbx\n";
-            push("rax");
-        }
-    } else {
-        throw std::runtime_error("No valid expression could be generated");
-    }
+    };
+    ExprVisitor visitor{*this};
+    std::visit(visitor, expr.m_value);
 }
 
 void Generator::gen_stmt(const Stmt& stmt) {
-    if (std::holds_alternative<ReturnStmt>(stmt.m_stmt)) {
-        gen_expr(*std::get<ReturnStmt>(stmt.m_stmt).m_expr);
-        m_output << "   ret\n";
-    } else if (std::holds_alternative<VariableStmt>(stmt.m_stmt)) {
-        if (!existing_vars.contains(std::get<VariableStmt>(stmt.m_stmt).m_name)) {
-            existing_vars.insert({std::get<VariableStmt>(stmt.m_stmt).m_name, Variable{.m_stack_loc = m_stack_size}});
-            gen_expr(*std::get<VariableStmt>(stmt.m_stmt).m_expr);
-        } else {
-            throw std::runtime_error("Variable with the same name already exists");
+    struct StmtVisitor {
+        Generator& m_gen;
+        void operator()(ReturnStmt return_stmt) {
+            m_gen.gen_expr(*return_stmt.m_expr);
+            m_gen.m_output << "   ret\n";
         }
-    } else if (std::holds_alternative<EscapeStmt>(stmt.m_stmt)) {
-        gen_expr(*std::get<EscapeStmt>(stmt.m_stmt).m_expr);
-        m_output << "   mov rax, 60\n";
-        pop("rdi");
-        m_output << "   syscall\n";
-    } else if (std::holds_alternative<LabelStmt>(stmt.m_stmt)) {
-        m_output << "   " << std::get<LabelStmt>(stmt.m_stmt).m_name << ":\n";
-    } else if (std::holds_alternative<GoStmt>(stmt.m_stmt)) {
-        m_output << "   jmp " << std::get<GoStmt>(stmt.m_stmt).m_dest << "\n";
+        void operator()(VariableStmt var_stmt) {
+            if (!existing_vars.contains(var_stmt.m_name)) {
+                existing_vars.insert({var_stmt.m_name, Variable{.m_stack_loc = m_gen.m_stack_size}});
+                m_gen.gen_expr(*var_stmt.m_expr);
+            } else {
+                m_gen.gen_rt_error("Variable exists elsewhere");
+            }
+        }
+        void operator()(EscapeStmt esc_stmt) {
+            m_gen.gen_expr(*esc_stmt.m_expr);
+            m_gen.m_output << "   mov rax, 60\n";
+            m_gen.pop("rdi");
+            m_gen.m_output << "   syscall\n";
+        }
+        void operator()(LabelStmt label_stmt) {
+            if (!existing_labels.contains(label_stmt.m_name)) {
+                existing_labels.insert({label_stmt.m_name, label_stmt});
+                m_gen.m_output << "   " << label_stmt.m_name << ":\n";
+            } else {
+                m_gen.gen_rt_error("Label exists elsewhere");
+            }
+        }
+        void operator()(GoStmt go_stmt) {
+            if (existing_labels.contains(go_stmt.m_dest)) {
+                m_gen.m_output << "   jmp " << go_stmt.m_dest << "\n";
+            } else {
+                m_gen.gen_rt_error("Label undefined");
+            }
+        }
+    };
+    StmtVisitor visitor{*this};
+    std::visit(visitor, stmt.m_stmt);
+}
+
+void Generator::gen_scope(const Scope& scope) {
+    for (const auto& stmt : scope.m_body) {
+        gen_stmt(Stmt{stmt.m_stmt});
     }
 }
 
 void Generator::gen_func_decl(const FuncDecl& func_decl) {
-    m_output << "global " << func_decl.m_name << "\n";
-    m_output << func_decl.m_name << ":\n";
-    for (const auto& item : func_decl.m_body) {
-        gen_stmt(Stmt(item.m_stmt));
+    if (!existing_funcs.contains(func_decl.m_name)) {
+        existing_funcs.insert({func_decl.m_name, func_decl});
+        m_output << "global " << func_decl.m_name << "\n";
+        m_output << func_decl.m_name << ":\n";
+        gen_scope(func_decl.m_scope);
+    } else {
+        gen_rt_error("Function exists elsewhere");
     }
 }
 
 void Generator::gen_program() {
     for (const auto& item : m_program.m_body) {
-        if (std::holds_alternative<FuncDecl>(item)) {
-            gen_func_decl(std::get<FuncDecl>(item));
-        } else {
-            throw std::runtime_error("Program body variant type not found");
-        }
+        gen_func_decl(item);
     }
     m_output << "global _start\n";
     m_output << "_start:\n";
@@ -100,10 +139,6 @@ void Generator::gen_program() {
     m_output << "   mov rax, 60\n";
     m_output << "   mov rdi, 0\n";
     m_output << "   syscall\n";
-}
-
-std::string Generator::get_output_str() const {
-    return m_output.str();
 }
 
 void Generator::push(const std::string& reg) {
@@ -114,4 +149,12 @@ void Generator::push(const std::string& reg) {
 void Generator::pop(const std::string &reg) {
     m_output << "   pop " << reg << "\n";
     m_stack_size--;
+}
+
+void Generator::gen_rt_error(const std::string& err_message) const {
+    throw std::runtime_error("Nex: Generator -> " + err_message);
+}
+
+std::string Generator::get_output_str() const {
+    return m_output.str();
 }

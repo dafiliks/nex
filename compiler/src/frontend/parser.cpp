@@ -1,23 +1,21 @@
 #include <stdexcept>
-#include <iostream>
 #include "tokenizer.hpp"
 #include "parser.hpp"
+#include "ast.hpp"
 
 Parser::Parser(const std::vector<Token>& tokens): m_tokens(tokens) {}
 
-Expr Parser::parse_atom() {
+TermExpr Parser::parse_term() {
     if (peek().get_type() == TokenType::int_lit) {
-        return Expr(IntExpr(std::stoi(consume().get_value())));
-    } else if (peek().get_type() == TokenType::string_lit) {
-        return Expr(StringExpr(consume().get_value()));
+        return TermExpr{IntExpr{std::stoi(consume().get_value())}};
     } else if (peek().get_type() == TokenType::identifier) {
-        return Expr(IdentExpr(consume().get_value()));
+        return TermExpr{IdentExpr{consume().get_value()}};
     }
-    throw std::runtime_error("Expected an atom");
+    parser_rt_error("Expected an atom");
 }
 
 Expr Parser::parse_expr(int min_prec) {
-    Expr lhs{parse_atom()};
+    Expr lhs{parse_term()};
     int prec{1};
     int next_min_prec{};
     while (is_bin_op(peek().get_type()) &&
@@ -34,130 +32,89 @@ Expr Parser::parse_expr(int min_prec) {
         if (match != bin_op_prec.end()) {
             bin_op.m_prec = match->second;
         }
-        lhs = Expr(bin_op);
+        lhs = Expr{bin_op};
     }
     return lhs;
 }
 
 Stmt Parser::parse_stmt() {
     if (peek().get_type() == TokenType::ret) {
-        ReturnStmt ret{};
-        consume();
-        ret.m_expr = std::make_shared<Expr>(parse_expr());
-        if (consume().get_type() == TokenType::semi) {
-            return Stmt(ret);
-        } else {
-            throw std::runtime_error("Expected a \";\" after ret");
-        }
+        ReturnStmt ret_stmt{};
+        consume(); // consume ret
+        ret_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+        try_consume_expect(TokenType::semi);
+        return Stmt{ret_stmt};
     } else if (peek().get_type() == TokenType::var) {
-        VariableStmt var{};
-        consume();
-        if (peek().get_type() == TokenType::identifier) {
-            var.m_name = peek().get_value();
-            consume();
-            if (peek().get_type() == TokenType::equals) {
-                consume();
-                var.m_expr = std::make_shared<Expr>(parse_expr());
-                if (consume().get_type() == TokenType::semi) {
-                    return Stmt(var);
-                } else {
-                    throw std::runtime_error("Expected a \";\" after var def");
-                }
-            } else {
-                throw std::runtime_error("Expected \"=\"");
-            }
-        } else {
-            throw std::runtime_error("Expected an identifier");
-        }
+        VariableStmt var_stmt{};
+        consume(); // consume var
+        var_stmt.m_name = peek().get_value();
+        try_consume_expect(TokenType::identifier);
+        try_consume_expect(TokenType::equals);
+        var_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+        try_consume_expect(TokenType::semi);
+        return Stmt{var_stmt};
     } else if (peek().get_type() == TokenType::esc) {
-        EscapeStmt esc{};
-        consume();
-        esc.m_expr = std::make_shared<Expr>(parse_expr());
-        if (consume().get_type() == TokenType::semi) {
-            return Stmt(esc);
-        } else {
-            throw std::runtime_error("Expected a \";\" after esc");
-        }
-    } else if (peek().get_type() == TokenType::set) { // not parsing it as expr because I don't want "set 52;"
-        LabelStmt label{};
-        consume();
-        if (peek().get_type() == TokenType::identifier) {
-            label.m_name = peek().get_value();
-            consume();
-            if (consume().get_type() == TokenType::semi) {
-                return Stmt(label);
-            } else {
-                // t
-            }
-        } else {
-            // t
-        }
+        EscapeStmt esc_stmt{};
+        consume(); // consume esc
+        esc_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+        try_consume_expect(TokenType::semi);
+        return Stmt{esc_stmt};
+    } else if (peek().get_type() == TokenType::set) {
+        // not parsing it as expr because I don't want "set 52;" functionality
+        LabelStmt label_stmt{};
+        consume(); // consume set
+        label_stmt.m_name = peek().get_value();
+        try_consume_expect(TokenType::identifier);
+        try_consume_expect(TokenType::semi);
+        return Stmt{label_stmt};
     } else if (peek().get_type() == TokenType::go) {
-        GoStmt go{};
-        consume();
-        if (peek().get_type() == TokenType::identifier) {
-            go.m_dest = peek().get_value();
-            consume();
-            if (consume().get_type() == TokenType::semi) {
-                return Stmt(go);
-            } else {
-                // t
-            }
-        } else {
-            // t
-        }
+        GoStmt go_stmt{};
+        consume(); // consume go
+        go_stmt.m_dest = peek().get_value();
+        try_consume_expect(TokenType::identifier);
+        try_consume_expect(TokenType::semi);
+        return Stmt{go_stmt};
     }
-    throw std::runtime_error("Expected a statement");
+    parser_rt_error("Expected statement");
 }
 
-
+Scope Parser::parse_scope() {
+    Scope scope{};
+    while (peek().get_type() != TokenType::c_bracket) {
+        if (is_stmt(peek().get_type())) {
+            scope.m_body.push_back(parse_stmt());
+        } else {
+            parser_rt_error("Expected " + to_string(TokenType::c_bracket));
+        }
+    }
+    try_consume_expect(TokenType::c_bracket);
+    return scope;
+}
 
 FuncDecl Parser::parse_func_decl() {
     FuncDecl func_decl{};
-    consume();
-    if (peek().get_type() == TokenType::identifier) {
-        if (peek().get_value() == "_start") {
-            throw std::runtime_error("Function name cannot be _start\n");
-        }
-        func_decl.m_name = peek().get_value();
-        consume();
-        if (peek().get_type() == TokenType::o_paren) {
-            // later on, we'll parse args here
-            consume();
-            if (peek().get_type() == TokenType::c_paren) {
-                consume();
-                if (peek().get_type() == TokenType::o_bracket) {
-                    consume();
-                    while (peek().get_type() != TokenType::c_bracket) {
-                        if (is_stmt(peek().get_type())) {
-                            func_decl.m_body.push_back(parse_stmt());
-                        } else {
-                            throw std::runtime_error("Expected a \"}\"");
-                        }
-                    }
-                    consume();
-                } else {
-                    throw std::runtime_error("Expected a \"{\"");
-                }
-            } else {
-                throw std::runtime_error("Expected a \")\"");
-            }
-        } else {
-            throw std::runtime_error("Expected a \"(\"");
-        }
-    } else {
-        throw std::runtime_error("Expected an identifier");
+    try_consume_expect(TokenType::fn); // consume fn
+    if (peek().get_value() == "_start") {
+        parser_rt_error("Function name cannot be _start\n");
     }
+    func_decl.m_name = peek().get_value();
+    try_consume_expect(TokenType::identifier);
+    try_consume_expect(TokenType::o_paren);
+    // parse arguments here later
+    try_consume_expect(TokenType::c_paren);
+    try_consume_expect(TokenType::o_bracket);
+    func_decl.m_scope = Scope{parse_scope()};
     return func_decl;
 }
 
 void Parser::parse_program() {
     while (!is_eof(peek().get_type())) {
-        try_consume_expect(TokenType::fn);
-        m_program.m_body.push_back(parse_func_decl());
+        if (peek().get_type() == TokenType::fn) {
+            m_program.m_body.push_back(parse_func_decl());
+        }
     }
     if (!contains_main()) {
-        parser_rt_error("Nex: Program lacks an entry point");
+        parser_rt_error("Program lacks an entry point");
     }
 }
 
@@ -165,7 +122,7 @@ Token Parser::peek(const std::size_t offset) const {
     if (m_index + offset < m_tokens.size()) {
         return m_tokens.at(m_index + offset);
     } else {
-        parser_rt_error("Nex: Parser -> peek offset out of range");
+        parser_rt_error("Peek offset out of range");
     }
 }
 
@@ -174,19 +131,19 @@ Token Parser::consume(const std::size_t distance) {
         m_index += distance;
         return m_tokens.at(m_index - distance);
     } else {
-        parser_rt_error("Nex: Parser -> consume distance out of range");
+        parser_rt_error("Consume distance out of range");
     }
 }
 
-Token Parser::try_consume_expect(TokenType type) {
+Token Parser::try_consume_expect(const TokenType type) {
     if (peek().get_type() == type) {
         return consume();
     }
-    parser_rt_error("Nex: Expected " + to_string(type));
+    parser_rt_error("Expected " + to_string(type));
 }
 
 void Parser::parser_rt_error(const std::string& err_message) const {
-    throw std::runtime_error(err_message);
+    throw std::runtime_error("Nex: Parser -> " + err_message);
 }
 
 std::vector<Token> Parser::get_tokens() const {
@@ -195,7 +152,7 @@ std::vector<Token> Parser::get_tokens() const {
 
 bool Parser::contains_main() const {
     for (const auto& item : m_program.m_body) {
-        if (std::get<FuncDecl>(item).m_name == "main") {
+        if (item.m_name == "main") {
             return true;
         }
     }
@@ -206,14 +163,14 @@ Program Parser::get_program() const {
     return m_program;
 }
 
-bool is_eof(TokenType type) {
+bool is_eof(const TokenType type) {
     if (type == TokenType::eof) {
         return true;
     }
     return false;
 }
 
-bool is_stmt(TokenType type) {
+bool is_stmt(const TokenType type) {
     if (type == TokenType::ret ||
         type == TokenType::var ||
         type == TokenType::esc ||
@@ -224,7 +181,7 @@ bool is_stmt(TokenType type) {
     return false;
 }
 
-bool is_bin_op(TokenType type) {
+bool is_bin_op(const TokenType type) {
     if (type == TokenType::add ||
         type == TokenType::neg ||
         type == TokenType::multiply ||

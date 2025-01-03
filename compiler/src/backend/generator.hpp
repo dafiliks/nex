@@ -11,17 +11,21 @@ struct Variable {
 
 static std::unordered_map<std::string, Variable> existing_vars{};
 static std::unordered_map<std::string, FuncDecl> existing_funcs{};
+static std::unordered_map<std::string, LabelStmt> existing_labels{};
 
 class Generator {
 public:
 	Generator(const Program& program);
+    void gen_term(const TermExpr& term);
 	void gen_expr(const Expr& expr);
 	void gen_stmt(const Stmt& stmt);
+    void gen_scope(const Scope& scope);
 	void gen_func_decl(const FuncDecl& func_decl);
 	void gen_program();
-	std::string get_output_str() const;
 	void push(const std::string& reg);
 	void pop(const std::string& reg);
+    void gen_rt_error(const std::string& err_message) const;
+    std::string get_output_str() const;
 private:
 	std::stringstream m_output{};
 	Program m_program{};

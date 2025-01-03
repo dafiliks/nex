@@ -8,27 +8,30 @@ I undertook this project as I was interested in how compilers work, and so far t
 
 # Example
 
-A simple application in Nex Lang could look like the below.
+This simple application showcases some features of Nex Lang.
 ```nex-lang
 # main.nex
 
-# main function (mandatory in Nex Lang)
+# main function
 fn main() {
     # initialising variables
     var foo = 200;
     var bar = 600;
 
+    # initialise a variable using maths expression
+    var x = 8 * 1 / 5 + 2;
+
     # infinite loop
     set label;
     go label;
 
-    # exit with code 200
+    # exit with code [foo] (200)
     esc foo;
 }
 
 # another function
 fn test() {
-    # do some maths and then return the result
+    # return a maths expression
     ret 5 + 10 * 2;
 }
 ```
@@ -67,8 +70,8 @@ To build Nex:
 
 ```bash
 git clone https://github.com/dafiliks/nex-lang
-mkdir nex/build
-cd nex/build
+mkdir nex-lang/build
+cd nex-lang/build
 cmake ..
 make
 # You can execute Nex with the commands below

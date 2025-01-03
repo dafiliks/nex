@@ -38,10 +38,6 @@ struct IntExpr {
     std::int32_t m_value{};
 };
 
-struct StringExpr {
-    std::string m_value{};
-};
-
 struct IdentExpr {
     std::string m_ident{};
 };
@@ -53,17 +49,25 @@ struct BinOpExpr {
     int m_prec{};
 };
 
+struct TermExpr {
+    std::variant<IntExpr, IdentExpr> m_term{};
+};
+
 struct Expr {
-    std::variant<IntExpr, StringExpr, IdentExpr, BinOpExpr> m_value{};
+    std::variant<TermExpr, BinOpExpr> m_value{};
+};
+
+struct Scope {
+    std::vector<Stmt> m_body{};
 };
 
 struct FuncDecl {
     std::string m_name{};
-    std::vector<Stmt> m_body{};
+    Scope m_scope{};
 };
 
 struct Program {
-    std::vector<std::variant<FuncDecl>> m_body{};
+    std::vector<FuncDecl> m_body{};
 };
 
 #endif

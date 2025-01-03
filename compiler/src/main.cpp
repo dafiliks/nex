@@ -1,10 +1,7 @@
 #include <iostream>
 #include <fstream>
-#include <streambuf>
-#include <vector>
 #include "frontend/tokenizer.hpp"
 #include "frontend/parser.hpp"
-#include "frontend/ast.hpp"
 #include "backend/generator.hpp"
 
 int main(int argc, char* argv[]) {
@@ -32,9 +29,9 @@ int main(int argc, char* argv[]) {
             }
             Parser parser{tokens.get_tokens()};
             parser.parse_program();
-            Generator generator{parser.get_program()};
-            generator.gen_program();
-            std::cout << "\n" << generator.get_output_str() << "\n";
+            Generator gen{parser.get_program()};
+            gen.gen_program();
+            std::cout << "\n" << gen.get_output_str() << "\n";
         }
     }
     return 0;
