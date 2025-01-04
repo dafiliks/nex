@@ -1,6 +1,9 @@
+// tokenizer.cpp
+// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+
 #include <cctype>
 #include <cstdlib>
-#include <stdexcept>
+#include <iostream>
 #include "tokenizer.hpp"
 
 Token::Token(const std::string& value, const TokenType& type)
@@ -43,17 +46,16 @@ std::vector<Token> Tokenizer::tokenize() {
                         m_buffer.clear();
                     }
                 } else if (peek() == '#') { // comments
-                    consume();
-                    if (peek() == '$') { // multiline
+                    if (consume() == '$') { // multiline
                         do consume();
-                        while (peek() != '$' && peek() != '\0');
-                        consume();
+                        while (peek() != '#' && peek() != '\0');
+                        consume(2);
                     } else {
                         do consume();
                         while (peek() != '\n' && peek() != '\0');
                     }
                 } else {
-                    tokenizer_rt_error("No matching token found");
+                    tokenizer_error("No matching token found");
                 }
             }
         } else {
@@ -68,7 +70,7 @@ char Tokenizer::peek(const std::size_t offset) const {
     if (m_index + offset < m_src.size()) {
         return m_src.at(m_index + offset);
     } else {
-        tokenizer_rt_error("Peek offset out of range");
+        tokenizer_error("Peek offset out of range");
     }
 }
 
@@ -77,7 +79,7 @@ char Tokenizer::consume(const std::size_t distance) {
         m_index += distance;
         return m_src.at(m_index - distance);
     } else {
-        tokenizer_rt_error("Consume distance out of range");
+        tokenizer_error("Consume distance out of range");
     }
 }
 
@@ -85,8 +87,9 @@ std::vector<Token> Tokenizer::get_tokens() const {
     return m_tokens;
 }
 
-void tokenizer_rt_error(const std::string& err_message) {
-    throw std::runtime_error("Nex: Tokenizer -> " + err_message);
+void tokenizer_error(const std::string& err_message) {
+    std::cerr << "Nex: Tokenizer: " << err_message << std::endl;
+    exit(EXIT_FAILURE);
 }
 
 bool is_skippable(const char c) {
@@ -97,7 +100,7 @@ char string_to_char(const std::string& s) {
     if (s.size() == 1) {
         return s.at(0);
     }
-    tokenizer_rt_error("String longer than 1 char");
+    tokenizer_error("String longer than 1 char");
 }
 
 std::string char_to_string(const char c) {
@@ -109,5 +112,5 @@ std::string to_string(const TokenType token_type) {
     if (match != token_names.end()) {
         return match->second;
     }
-    tokenizer_rt_error("Token unknown");
+    tokenizer_error("Token unknown");
 }

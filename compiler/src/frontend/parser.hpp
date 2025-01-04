@@ -1,3 +1,6 @@
+// parser.hpp
+// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+
 #ifndef PARSER_HPP
 #define PARSER_HPP
 
@@ -24,7 +27,7 @@ public:
     Token peek(const std::size_t offset = 0) const;
     Token consume(const std::size_t distance = 1);
     Token try_consume_expect(const TokenType type);
-    void parser_rt_error(const std::string& err_message) const;
+    void parser_error(const std::string& err_message) const;
     Program get_program() const;
     std::vector<Token> get_tokens() const;
     bool contains_main() const;

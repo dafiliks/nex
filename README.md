@@ -12,6 +12,9 @@ This simple application showcases some features of Nex Lang.
 ```nex-lang
 # main.nex
 
+#$ multiline
+comment $#
+
 # main function
 fn main() {
     # initialising variables
@@ -25,9 +28,13 @@ fn main() {
     set label;
     go label;
 
-    # exit with code [foo] (200)
+    # exit with variable foo (exit code 200)
     esc foo;
 }
+
+#$ another
+multiline
+comment $#
 
 # another function
 fn test() {
@@ -37,6 +44,16 @@ fn test() {
 ```
 
 # Info
+
+### Commands
+Below, you can see the usage of the nex executable and some options.
+
+```bash
+Nex: Usage: nex <file.nex> -o <file.asm>
+--version         Displays all version information
+"-o <file.asm>     Specifies the file to dump asm code into
+```
+
 
 ### Assembly
 Currently, Nex only outputs Intel x64 assembly. You can execute the assembly spat out by Nex using nasm.

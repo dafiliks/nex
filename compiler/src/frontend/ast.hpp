@@ -1,3 +1,6 @@
+// ast.hpp
+// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+
 #ifndef AST_HPP
 #define AST_HPP
 

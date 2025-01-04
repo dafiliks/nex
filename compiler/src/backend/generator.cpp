@@ -1,4 +1,8 @@
-#include <stdexcept>
+// generator.cpp
+// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+
+#include <cstdlib>
+#include <iostream>
 #include <unordered_map>
 #include "generator.hpp"
 
@@ -18,7 +22,7 @@ void Generator::gen_term(const TermExpr& term) {
                 reg << "QWORD [rsp + " << (m_gen.m_stack_size - var.m_stack_loc - 1) * 8 << "]";
                 m_gen.push(reg.str());
             } else {
-                m_gen.gen_rt_error("Variable undefined");
+                m_gen.gen_error("Variable undefined");
             }
         }
     };
@@ -83,7 +87,7 @@ void Generator::gen_stmt(const Stmt& stmt) {
                 existing_vars.insert({var_stmt.m_name, Variable{.m_stack_loc = m_gen.m_stack_size}});
                 m_gen.gen_expr(*var_stmt.m_expr);
             } else {
-                m_gen.gen_rt_error("Variable exists elsewhere");
+                m_gen.gen_error("Variable exists elsewhere");
             }
         }
         void operator()(EscapeStmt esc_stmt) {
@@ -97,14 +101,14 @@ void Generator::gen_stmt(const Stmt& stmt) {
                 existing_labels.insert({label_stmt.m_name, label_stmt});
                 m_gen.m_output << "   " << label_stmt.m_name << ":\n";
             } else {
-                m_gen.gen_rt_error("Label exists elsewhere");
+                m_gen.gen_error("Label exists elsewhere");
             }
         }
         void operator()(GoStmt go_stmt) {
             if (existing_labels.contains(go_stmt.m_dest)) {
                 m_gen.m_output << "   jmp " << go_stmt.m_dest << "\n";
             } else {
-                m_gen.gen_rt_error("Label undefined");
+                m_gen.gen_error("Label undefined");
             }
         }
     };
@@ -125,7 +129,7 @@ void Generator::gen_func_decl(const FuncDecl& func_decl) {
         m_output << func_decl.m_name << ":\n";
         gen_scope(func_decl.m_scope);
     } else {
-        gen_rt_error("Function exists elsewhere");
+        gen_error("Function exists elsewhere");
     }
 }
 
@@ -151,8 +155,9 @@ void Generator::pop(const std::string &reg) {
     m_stack_size--;
 }
 
-void Generator::gen_rt_error(const std::string& err_message) const {
-    throw std::runtime_error("Nex: Generator -> " + err_message);
+void Generator::gen_error(const std::string& err_message) const {
+    std::cerr << "Nex: Generator: " << err_message << std::endl;
+    exit(EXIT_FAILURE);
 }
 
 std::string Generator::get_output_str() const {

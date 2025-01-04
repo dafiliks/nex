@@ -1,3 +1,6 @@
+// generator.hpp
+// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+
 #ifndef GENERATOR_HPP
 #define GENERATOR_HPP
 
@@ -24,7 +27,7 @@ public:
 	void gen_program();
 	void push(const std::string& reg);
 	void pop(const std::string& reg);
-    void gen_rt_error(const std::string& err_message) const;
+    void gen_error(const std::string& err_message) const;
     std::string get_output_str() const;
 private:
 	std::stringstream m_output{};

@@ -1,3 +1,6 @@
+// tokenizer.hpp
+// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+
 #ifndef TOKENIZER_HPP
 #define TOKENIZER_HPP
 
@@ -99,7 +102,7 @@ private:
     std::vector<Token> m_tokens{};
 };
 
-void tokenizer_rt_error(const std::string& err_message);
+void tokenizer_error(const std::string& err_message);
 bool is_skippable(const char c);
 char string_to_char(const std::string& s);
 std::string char_to_string(const char c);

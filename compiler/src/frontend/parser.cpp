@@ -1,4 +1,8 @@
-#include <stdexcept>
+// parser.cpp
+// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+
+#include <cstdlib>
+#include <iostream>
 #include "tokenizer.hpp"
 #include "parser.hpp"
 #include "ast.hpp"
@@ -11,7 +15,7 @@ TermExpr Parser::parse_term() {
     } else if (peek().get_type() == TokenType::identifier) {
         return TermExpr{IdentExpr{consume().get_value()}};
     }
-    parser_rt_error("Expected an atom");
+    parser_error("Expected term");
 }
 
 Expr Parser::parse_expr(int min_prec) {
@@ -75,7 +79,7 @@ Stmt Parser::parse_stmt() {
         try_consume_expect(TokenType::semi);
         return Stmt{go_stmt};
     }
-    parser_rt_error("Expected statement");
+    parser_error("Expected statement");
 }
 
 Scope Parser::parse_scope() {
@@ -84,7 +88,7 @@ Scope Parser::parse_scope() {
         if (is_stmt(peek().get_type())) {
             scope.m_body.push_back(parse_stmt());
         } else {
-            parser_rt_error("Expected " + to_string(TokenType::c_bracket));
+            parser_error("Expected c_bracket");
         }
     }
     try_consume_expect(TokenType::c_bracket);
@@ -95,7 +99,7 @@ FuncDecl Parser::parse_func_decl() {
     FuncDecl func_decl{};
     try_consume_expect(TokenType::fn); // consume fn
     if (peek().get_value() == "_start") {
-        parser_rt_error("Function name cannot be _start\n");
+        parser_error("Function name cannot be _start\n");
     }
     func_decl.m_name = peek().get_value();
     try_consume_expect(TokenType::identifier);
@@ -111,10 +115,12 @@ void Parser::parse_program() {
     while (!is_eof(peek().get_type())) {
         if (peek().get_type() == TokenType::fn) {
             m_program.m_body.push_back(parse_func_decl());
+        } else {
+            parser_error("Expected func_decl");
         }
     }
     if (!contains_main()) {
-        parser_rt_error("Program lacks an entry point");
+        parser_error("Program lacks an entry point");
     }
 }
 
@@ -122,7 +128,7 @@ Token Parser::peek(const std::size_t offset) const {
     if (m_index + offset < m_tokens.size()) {
         return m_tokens.at(m_index + offset);
     } else {
-        parser_rt_error("Peek offset out of range");
+        parser_error("Peek offset out of range");
     }
 }
 
@@ -131,7 +137,7 @@ Token Parser::consume(const std::size_t distance) {
         m_index += distance;
         return m_tokens.at(m_index - distance);
     } else {
-        parser_rt_error("Consume distance out of range");
+        parser_error("Consume distance out of range");
     }
 }
 
@@ -139,11 +145,12 @@ Token Parser::try_consume_expect(const TokenType type) {
     if (peek().get_type() == type) {
         return consume();
     }
-    parser_rt_error("Expected " + to_string(type));
+    parser_error("Expected " + to_string(type));
 }
 
-void Parser::parser_rt_error(const std::string& err_message) const {
-    throw std::runtime_error("Nex: Parser -> " + err_message);
+void Parser::parser_error(const std::string& err_message) const {
+    std::cerr << "Nex: Parser: " << err_message << std::endl;
+    exit(EXIT_FAILURE);
 }
 
 std::vector<Token> Parser::get_tokens() const {
