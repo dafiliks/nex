@@ -11,7 +11,7 @@
 #include "backend/generator.hpp"
 
 void itf_error(const std::string& err_message) {
-    std::cerr << "Nex: Interface: " << err_message << ". Run nex --help" << std::endl;
+    std::cout << "Nex: interface error: " << err_message << ". Run nex --help\n";
     exit(EXIT_FAILURE);
 }
 
@@ -36,13 +36,13 @@ bool is_asm_file(const char* file_name) {
 int main(int argc, char* argv[]) {
     if (argc == 2) {
         if (std::strcmp(argv[1], "--help") == 0) {
-            std::cout << "Nex: Usage: nex <file.nex> -o <file.asm>\n" << std::endl;
-            std::cout << "--version         Displays all version information\n" << std::endl;
-            std::cout << "-o <file.asm>     Specifies the file to dump asm code into\n" << std::endl;
+            std::cout << "Nex: Usage: nex <file.nex> -o <file.asm>\n";
+            std::cout << "--version         Displays all version information\n";
+            std::cout << "-o <file.asm>     Specifies the file to dump asm code into\n";
         } else if (std::strcmp(argv[1], "--version") == 0) {
-            std::cout << "nex (Nex) v1.0\n" << std::endl;
-            std::cout << "Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>\n" << std::endl;
-            std::cout << "The software is provided \"as is\", without warranty of any kind.\n" << std::endl;
+            std::cout << "nex (Nex) v1.0\n";
+            std::cout << "Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>\n";
+            std::cout << "The software is provided \"as is\", without warranty of any kind\n";
         } else {
             itf_error("Invalid options");
         }

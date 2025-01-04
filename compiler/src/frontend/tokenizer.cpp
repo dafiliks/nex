@@ -88,7 +88,7 @@ std::vector<Token> Tokenizer::get_tokens() const {
 }
 
 void tokenizer_error(const std::string& err_message) {
-    std::cerr << "Nex: Tokenizer: " << err_message << std::endl;
+    std::cout << "Nex: tokenizer error: " << err_message << "\n";
     exit(EXIT_FAILURE);
 }
 

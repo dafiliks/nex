@@ -149,7 +149,7 @@ Token Parser::try_consume_expect(const TokenType type) {
 }
 
 void Parser::parser_error(const std::string& err_message) const {
-    std::cerr << "Nex: Parser: " << err_message << std::endl;
+    std::cout << "Nex: parser error: " << err_message << "\n";
     exit(EXIT_FAILURE);
 }
 

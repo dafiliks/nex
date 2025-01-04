@@ -156,7 +156,7 @@ void Generator::pop(const std::string &reg) {
 }
 
 void Generator::gen_error(const std::string& err_message) const {
-    std::cerr << "Nex: Generator: " << err_message << std::endl;
+    std::cout << "Nex: generator error: " << err_message << "\n";
     exit(EXIT_FAILURE);
 }
 
