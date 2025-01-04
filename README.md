@@ -48,10 +48,10 @@ fn test() {
 ### Commands
 Below, you can see the usage of the nex executable and some options.
 
-```bash
+```
 Nex: Usage: nex <file.nex> -o <file.asm>
 --version         Displays all version information
-"-o <file.asm>     Specifies the file to dump asm code into
+-o <file.asm>     Specifies the file to dump asm code into
 ```
 
 
