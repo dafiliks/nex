@@ -116,26 +116,10 @@ void Generator::gen_stmt(const Stmt& stmt) {
     std::visit(visitor, stmt.m_stmt);
 }
 
-void Generator::gen_scope(const Scope& scope) {
-    for (const auto& stmt : scope.m_body) {
-        gen_stmt(Stmt{stmt.m_stmt});
-    }
-}
-
-void Generator::gen_func_decl(const FuncDecl& func_decl) {
-    if (!existing_funcs.contains(func_decl.m_name)) {
-        existing_funcs.insert({func_decl.m_name, func_decl});
-        m_output << "global " << func_decl.m_name << "\n";
-        m_output << func_decl.m_name << ":\n";
-        gen_scope(func_decl.m_scope);
-    } else {
-        gen_error("Function exists elsewhere");
-    }
-}
-
 void Generator::gen_program() {
+    m_output << "main:\n";
     for (const auto& item : m_program.m_body) {
-        gen_func_decl(item);
+        gen_stmt(item);
     }
     m_output << "global _start\n";
     m_output << "_start:\n";

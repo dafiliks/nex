@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <memory>
 #include "tokenizer.hpp"
 #include "parser.hpp"
 #include "ast.hpp"
@@ -20,23 +21,25 @@ TermExpr Parser::parse_term() {
 
 Expr Parser::parse_expr(int min_prec) {
     Expr lhs{parse_term()};
-    int prec{1};
-    int next_min_prec{};
-    while (is_bin_op(peek().get_type()) &&
-        !is_eof(peek().get_type()) &&
-        prec >= min_prec) {
-        std::string op{consume().get_value()};
-        next_min_prec = prec + 1;
-        Expr rhs{parse_expr(next_min_prec)};
-        BinOpExpr bin_op{};
-        bin_op.m_op = op;
-        bin_op.m_lhs = std::make_shared<Expr>(lhs);
-        bin_op.m_rhs = std::make_shared<Expr>(rhs);
+    while (true) {
+        if (!is_bin_op(peek().get_type()) || is_eof(peek().get_type())) {
+            break;
+        }
+        BinOpExpr bin_op_expr{};
+        int prec{1};
         auto match{bin_op_prec.find(peek().get_type())};
         if (match != bin_op_prec.end()) {
-            bin_op.m_prec = match->second;
+            prec = match->second;
         }
-        lhs = Expr{bin_op};
+        if (prec < min_prec) {
+            break;
+        }
+        std::string op{consume().get_value()};
+        Expr rhs{parse_expr(prec + 1)};
+        bin_op_expr.m_op = op;
+        bin_op_expr.m_lhs = std::make_shared<Expr>(lhs);
+        bin_op_expr.m_rhs = std::make_shared<Expr>(rhs);
+        lhs = Expr{bin_op_expr};
     }
     return lhs;
 }
@@ -82,45 +85,9 @@ Stmt Parser::parse_stmt() {
     parser_error("Expected statement");
 }
 
-Scope Parser::parse_scope() {
-    Scope scope{};
-    while (peek().get_type() != TokenType::c_bracket) {
-        if (is_stmt(peek().get_type())) {
-            scope.m_body.push_back(parse_stmt());
-        } else {
-            parser_error("Expected c_bracket");
-        }
-    }
-    try_consume_expect(TokenType::c_bracket);
-    return scope;
-}
-
-FuncDecl Parser::parse_func_decl() {
-    FuncDecl func_decl{};
-    try_consume_expect(TokenType::fn); // consume fn
-    if (peek().get_value() == "_start") {
-        parser_error("Function name cannot be _start\n");
-    }
-    func_decl.m_name = peek().get_value();
-    try_consume_expect(TokenType::identifier);
-    try_consume_expect(TokenType::o_paren);
-    // parse arguments here later
-    try_consume_expect(TokenType::c_paren);
-    try_consume_expect(TokenType::o_bracket);
-    func_decl.m_scope = Scope{parse_scope()};
-    return func_decl;
-}
-
 void Parser::parse_program() {
     while (!is_eof(peek().get_type())) {
-        if (peek().get_type() == TokenType::fn) {
-            m_program.m_body.push_back(parse_func_decl());
-        } else {
-            parser_error("Expected func_decl");
-        }
-    }
-    if (!contains_main()) {
-        parser_error("Program lacks an entry point");
+        m_program.m_body.push_back(parse_stmt());
     }
 }
 
@@ -155,15 +122,6 @@ void Parser::parser_error(const std::string& err_message) const {
 
 std::vector<Token> Parser::get_tokens() const {
     return m_tokens;
-}
-
-bool Parser::contains_main() const {
-    for (const auto& item : m_program.m_body) {
-        if (item.m_name == "main") {
-            return true;
-        }
-    }
-    return false;
 }
 
 Program Parser::get_program() const {

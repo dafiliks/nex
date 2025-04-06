@@ -21,8 +21,6 @@ public:
     TermExpr parse_term();
     Expr parse_expr(int min_prec = 1);
     Stmt parse_stmt();
-    Scope parse_scope();
-    FuncDecl parse_func_decl();
     void parse_program();
     Token peek(const std::size_t offset = 0) const;
     Token consume(const std::size_t distance = 1);

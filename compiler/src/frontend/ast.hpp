@@ -50,6 +50,7 @@ struct BinOpExpr {
     std::shared_ptr<Expr> m_rhs{};
     std::string m_op{};
     int m_prec{};
+    bool m_is_computed{false};
 };
 
 struct TermExpr {
@@ -60,17 +61,8 @@ struct Expr {
     std::variant<TermExpr, BinOpExpr> m_value{};
 };
 
-struct Scope {
-    std::vector<Stmt> m_body{};
-};
-
-struct FuncDecl {
-    std::string m_name{};
-    Scope m_scope{};
-};
-
 struct Program {
-    std::vector<FuncDecl> m_body{};
+    std::vector<Stmt> m_body{};
 };
 
 #endif

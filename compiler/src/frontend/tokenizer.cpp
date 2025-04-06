@@ -1,5 +1,5 @@
 // tokenizer.cpp
-// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+// Copyright (C) David Filiks <davidfiliks55@gmail.com>
 
 #include <cctype>
 #include <cstdlib>
@@ -45,8 +45,8 @@ std::vector<Token> Tokenizer::tokenize() {
                         }
                         m_buffer.clear();
                     }
-                } else if (peek() == '#') { // comments
-                    if (consume() == '$') { // multiline
+                } else if (consume() == '#') { // comments
+                    if (peek() == '$') { // multiline
                         do consume();
                         while (peek() != '#' && peek() != '\0');
                         consume(2);

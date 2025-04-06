@@ -8,39 +8,35 @@ I undertook this project as I was interested in how compilers work, and so far t
 
 # Example
 
-This simple application showcases some features of Nex Lang.
+The application below showcases most of the current features of Nex Lang.
 ```nex-lang
-# main.nex
+var x = 200 + 5;
+tape b[30000];
 
-#$ multiline
+# single line comment
+x = 5;
+
+b[1] = 563 + 2 / 3;
+b[5] = 204;
+
+var c = input();
+
+output("test");
+
+set loop;
+
+#$ multi
+line
 comment $#
 
-# main function
-fn main() {
-    # initialising variables
-    var foo = 200;
-    var bar = 600;
-
-    # initialise a variable using maths expression
-    var x = 8 * 1 / 5 + 2;
-
-    # infinite loop
-    set label;
-    go label;
-
-    # exit with variable foo (exit code 200)
-    esc foo;
+if c > 2 {
+    b[5] = x;
+} else {
+    output("else statement");
+    go loop;
 }
 
-#$ another
-multiline
-comment $#
-
-# another function
-fn test() {
-    # return a maths expression
-    ret 5 + 10 * 2;
-}
+esc b[5] + b[1] / c;
 ```
 
 # Info
@@ -50,8 +46,8 @@ Below, you can see the usage of the nex executable and some options.
 
 ```
 Nex: Usage: nex <file.nex> -o <file.asm>
---version         Displays all version information
--o <file.asm>     Specifies the file to dump asm code into
+nex --version         Displays all version information
+nex --d               Enables debug mode, useful for devs
 ```
 
 
