@@ -1,5 +1,5 @@
 // tokenizer.cpp
-// Copyright (C) David Filiks <davidfiliks55@gmail.com>
+// Copyright (C) David Filiks
 
 #include <cctype>
 #include <cstdlib>

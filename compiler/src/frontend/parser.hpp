@@ -1,5 +1,5 @@
 // parser.hpp
-// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+// Copyright (C) David Filiks
 
 #ifndef PARSER_HPP
 #define PARSER_HPP
@@ -20,6 +20,7 @@ public:
 	Parser(const std::vector<Token>& tokens);
     TermExpr parse_term();
     Expr parse_expr(int min_prec = 1);
+    Scope parse_scope();
     Stmt parse_stmt();
     void parse_program();
     Token peek(const std::size_t offset = 0) const;

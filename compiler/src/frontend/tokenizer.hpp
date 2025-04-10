@@ -1,5 +1,5 @@
 // tokenizer.hpp
-// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+// Copyright (C) David Filiks
 
 #ifndef TOKENIZER_HPP
 #define TOKENIZER_HPP
@@ -10,65 +10,72 @@
 
 enum class TokenType {
     int_lit,
-    string_lit,
     semi,
     identifier,
     set,
     go,
+    in,
+    out,
+    ifz,
+    el,
     underscore,
     equals,
     add,
     neg,
     multiply,
     divide,
-    o_paren,
-    c_paren,
+    sqo_bracket,
+    sqc_bracket,
     o_bracket,
     c_bracket,
-    fn,
     var,
-    esc,
-    ret,
+    arr,
+    ex,
     eof,
 };
 
 static const std::unordered_map<std::string, TokenType> nex_keywords {
     {"set", TokenType::set},
     {"go", TokenType::go},
-    {"ret", TokenType::ret},
-    {"fn", TokenType::fn},
+    {"in", TokenType::in},
+    {"out", TokenType::out},
+    {"ifz", TokenType::ifz},
+    {"el", TokenType::el},
     {"var", TokenType::var},
-    {"esc", TokenType::esc}
+    {"arr", TokenType::arr},
+    {"ex", TokenType::ex}
 };
 
 static const std::unordered_map<TokenType, std::string> token_names {
     {TokenType::int_lit, "int_lit"},
-    {TokenType::string_lit, "string_lit"},
     {TokenType::semi, "semi"},
     {TokenType::identifier, "identifier"},
     {TokenType::set, "set"},
     {TokenType::go, "go"},
+    {TokenType::in, "in"},
+    {TokenType::out, "out"},
+    {TokenType::ifz, "ifz"},
+    {TokenType::el, "el"},
     {TokenType::underscore, "underscore"},
     {TokenType::equals, "equals"},
     {TokenType::add, "add"},
     {TokenType::neg, "neg"},
     {TokenType::multiply, "multiply"},
     {TokenType::divide, "divide"},
-    {TokenType::o_paren, "o_paren"},
-    {TokenType::c_paren, "c_paren"},
+    {TokenType::sqo_bracket, "sqo_bracket"},
+    {TokenType::sqc_bracket, "sqc_bracket"},
     {TokenType::o_bracket, "o_bracket"},
     {TokenType::c_bracket, "c_bracket"},
-    {TokenType::fn, "fn"},
     {TokenType::var, "var"},
-    {TokenType::esc, "esc"},
-    {TokenType::ret, "ret"},
+    {TokenType::arr, "arr"},
+    {TokenType::ex, "ex"},
     {TokenType::eof, "eof"}
 };
 
 static const std::unordered_map<char, TokenType> single_char_tokens {
     {';', TokenType::semi},
-    {'(', TokenType::o_paren},
-    {')', TokenType::c_paren},
+    {'[', TokenType::sqo_bracket},
+    {']', TokenType::sqc_bracket},
     {'{', TokenType::o_bracket},
     {'}', TokenType::c_bracket},
     {'=', TokenType::equals},

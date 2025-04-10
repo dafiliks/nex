@@ -1,5 +1,5 @@
 // generator.hpp
-// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+// Copyright (C) David Filiks
 
 #ifndef GENERATOR_HPP
 #define GENERATOR_HPP
@@ -8,11 +8,8 @@
 #include <unordered_map>
 #include "../frontend/ast.hpp"
 
-struct Variable {
-	std::size_t m_stack_loc{};
-};
-
-static std::unordered_map<std::string, Variable> existing_vars{};
+static std::unordered_map<std::string, VariableStmt> existing_vars{};
+static std::unordered_map<std::string, ArrayStmt> existing_arrs{};
 static std::unordered_map<std::string, LabelStmt> existing_labels{};
 
 class Generator {
@@ -20,6 +17,7 @@ public:
 	Generator(const Program& program);
     void gen_term(const TermExpr& term);
 	void gen_expr(const Expr& expr);
+    void gen_scope(const Scope& scope);
 	void gen_stmt(const Stmt& stmt);
 	void gen_program();
 	void push(const std::string& reg);
@@ -30,6 +28,8 @@ private:
 	std::stringstream m_output{};
 	Program m_program{};
 	std::size_t m_stack_size{};
+    std::size_t m_jz_count{};
+    std::size_t m_arr_count{};
 };
 
 #endif

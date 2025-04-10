@@ -29,26 +29,11 @@ int main(int argc, char* argv[]) {
         if (std::strcmp(argv[1], "--help") == 0) {
             std::cout << "Nex: Usage: nex <file.nex> -o <file.asm>\n";
             std::cout << "nex --version         Displays all version information\n";
-            std::cout << "nex --d               Enables debug mode, useful for devs\n";
         } else if (std::strcmp(argv[1], "--version") == 0) {
             std::cout << "nex (Nex) v1.0\n";
             std::cout << "Copyright (C) David Filiks\n";
             std::cout << "The software is provided \"as is\", without warranty of any kind\n";
-        } else if (std::strcmp(argv[1], "--d") == 0) {
-        std::cout << "nex (Nex) v1.0 debug mode\n";
-        std::string input{};
-        while (true) {
-            std::cout << "> ";
-            std::getline(std::cin, input);
-            std::cout << "\n";
-            Tokenizer tokenizer{input};
-            tokenizer.tokenize();
-            Parser parser{tokenizer.get_tokens()};
-            parser.parse_program();
-            Generator gen{parser.get_program()};
-            gen.gen_program();
-            std::cout << gen.get_output_str();
-        } } else {
+        } else {
             itf_error("Invalid options");
         }
     } else if (argc == 4) {
@@ -77,7 +62,20 @@ int main(int argc, char* argv[]) {
             itf_error("Expected source file name");
         }
     } else {
-        itf_error("Invalid options");
+        std::cout << "nex (Nex) v1.0 debug mode\n";
+        std::string input{};
+        while (true) {
+            std::cout << "> ";
+            std::getline(std::cin, input);
+            std::cout << "\n";
+            Tokenizer tokenizer{input};
+            tokenizer.tokenize();
+            Parser parser{tokenizer.get_tokens()};
+            parser.parse_program();
+            Generator gen{parser.get_program()};
+            gen.gen_program();
+            std::cout << gen.get_output_str();
+        }
     }
     return 0;
 }

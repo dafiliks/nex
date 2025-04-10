@@ -1,5 +1,5 @@
 // parser.cpp
-// Copyright (C) 2024 David Filiks <davidfiliks55@gmail.com>
+// Copyright (C) David Filiks
 
 #include <cstdlib>
 #include <iostream>
@@ -12,9 +12,21 @@ Parser::Parser(const std::vector<Token>& tokens): m_tokens(tokens) {}
 
 TermExpr Parser::parse_term() {
     if (peek().get_type() == TokenType::int_lit) {
-        return TermExpr{IntExpr{std::stoi(consume().get_value())}};
+        IntExpr int_expr{};
+        int_expr.m_value = std::stoi(consume().get_value());
+        return TermExpr{int_expr};
     } else if (peek().get_type() == TokenType::identifier) {
-        return TermExpr{IdentExpr{consume().get_value()}};
+        if (peek(1).get_type() == TokenType::sqo_bracket) {
+            ArrayExpr arr_expr{};
+            arr_expr.m_ident = consume().get_value();
+            try_consume_expect(TokenType::sqo_bracket);
+            arr_expr.m_index = std::atoi(consume().get_value().c_str());
+            try_consume_expect(TokenType::sqc_bracket);
+            return TermExpr{arr_expr};
+        }
+        IdentExpr ident_expr{};
+        ident_expr.m_ident = consume().get_value();
+        return TermExpr{ident_expr};
     }
     parser_error("Expected term");
 }
@@ -44,43 +56,99 @@ Expr Parser::parse_expr(int min_prec) {
     return lhs;
 }
 
+Scope Parser::parse_scope() {
+    Scope scope{};
+    try_consume_expect(TokenType::o_bracket);
+    do {
+        scope.m_body.push_back(parse_stmt());
+    } while (peek().get_type() != TokenType::c_bracket);
+    consume();
+    return scope;
+}
+
+// should've probably used a switch case
 Stmt Parser::parse_stmt() {
-    if (peek().get_type() == TokenType::ret) {
-        ReturnStmt ret_stmt{};
-        consume(); // consume ret
-        ret_stmt.m_expr = std::make_shared<Expr>(parse_expr());
-        try_consume_expect(TokenType::semi);
-        return Stmt{ret_stmt};
-    } else if (peek().get_type() == TokenType::var) {
+    if (peek().get_type() == TokenType::var) {
         VariableStmt var_stmt{};
-        consume(); // consume var
-        var_stmt.m_name = peek().get_value();
-        try_consume_expect(TokenType::identifier);
-        try_consume_expect(TokenType::equals);
-        var_stmt.m_expr = std::make_shared<Expr>(parse_expr());
-        try_consume_expect(TokenType::semi);
+        consume();
+        var_stmt.m_name = consume().get_value();
+        if (!(peek().get_type() == TokenType::semi)) {
+            try_consume_expect(TokenType::equals);
+            var_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+            try_consume_expect(TokenType::semi);
+        } else {
+            consume();
+        }
         return Stmt{var_stmt};
-    } else if (peek().get_type() == TokenType::esc) {
-        EscapeStmt esc_stmt{};
-        consume(); // consume esc
-        esc_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+    } else if (peek().get_type() == TokenType::arr) {
+        ArrayStmt arr_stmt{};
+        consume();
+        arr_stmt.m_name = consume().get_value();
+        try_consume_expect(TokenType::sqo_bracket);
+        if (!(peek().get_type() == TokenType::sqc_bracket)) {
+            arr_stmt.m_arr_size = std::atoi(peek().get_value().c_str());
+            try_consume_expect(TokenType::int_lit);
+        } else {
+            // default size
+            arr_stmt.m_arr_size = 30000;
+        }
+        try_consume_expect(TokenType::sqc_bracket);
         try_consume_expect(TokenType::semi);
-        return Stmt{esc_stmt};
+        return Stmt{arr_stmt};
+    } else if (peek().get_type() == TokenType::identifier) {
+        IdentStmt ident_stmt{};
+        ident_stmt.m_dest = consume().get_value();
+        if (peek().get_type() == TokenType::sqo_bracket) {
+            consume();
+            ident_stmt.m_index = std::make_shared<Expr>(parse_expr());
+            try_consume_expect(TokenType::sqc_bracket);
+            try_consume_expect(TokenType::equals);
+            ident_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+            try_consume_expect(TokenType::semi);
+            return Stmt{ident_stmt};
+        }
+        try_consume_expect(TokenType::equals);
+        ident_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+        try_consume_expect(TokenType::semi);
+        return Stmt{ident_stmt};
+    } else if (peek().get_type() == TokenType::ex) {
+        ExitStmt ex_stmt{};
+        consume();
+        ex_stmt.m_expr = std::make_shared<Expr>(parse_expr());
+        try_consume_expect(TokenType::semi);
+        return Stmt{ex_stmt};
     } else if (peek().get_type() == TokenType::set) {
-        // not parsing it as expr because I don't want "set 52;" functionality
         LabelStmt label_stmt{};
-        consume(); // consume set
+        consume();
         label_stmt.m_name = peek().get_value();
         try_consume_expect(TokenType::identifier);
         try_consume_expect(TokenType::semi);
         return Stmt{label_stmt};
     } else if (peek().get_type() == TokenType::go) {
         GoStmt go_stmt{};
-        consume(); // consume go
+        consume();
         go_stmt.m_dest = peek().get_value();
         try_consume_expect(TokenType::identifier);
         try_consume_expect(TokenType::semi);
         return Stmt{go_stmt};
+    } else if (peek().get_type() == TokenType::in) {
+        InStmt in_stmt{};
+        consume();
+        in_stmt.m_no_bytes = std::make_shared<Expr>(parse_expr());
+        try_consume_expect(TokenType::semi);
+        return Stmt{in_stmt};
+    } else if (peek().get_type() == TokenType::ifz) {
+        IfzStmt ifz_stmt{};
+        consume();
+        ifz_stmt.m_cond = std::make_shared<Expr>(parse_expr());
+        ifz_stmt.m_body = std::make_shared<Scope>(parse_scope());
+        if (peek().get_type() == TokenType::el) {
+            ElseStmt else_stmt{};
+            consume();
+            else_stmt.m_body = std::make_shared<Scope>(parse_scope());
+            ifz_stmt.m_else = std::make_shared<Stmt>(else_stmt);
+        }
+        return Stmt{ifz_stmt};
     }
     parser_error("Expected statement");
 }
@@ -136,9 +204,8 @@ bool is_eof(const TokenType type) {
 }
 
 bool is_stmt(const TokenType type) {
-    if (type == TokenType::ret ||
-        type == TokenType::var ||
-        type == TokenType::esc ||
+    if (type == TokenType::var ||
+        type == TokenType::ex ||
         type == TokenType::set ||
         type == TokenType::go) {
         return true;
