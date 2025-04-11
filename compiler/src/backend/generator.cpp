@@ -29,13 +29,30 @@ void Generator::gen_term(const TermExpr& term) {
             if (existing_arrs.contains(arr_expr.m_ident)) {
                 auto var{existing_arrs.at(arr_expr.m_ident)};
                 std::stringstream reg{};
-                arr_expr.m_index += -1;
-                std::cout << "INDEX: " << arr_expr.m_index << "\n";
-                reg << "QWORD [rsp + " << (m_gen.m_stack_size - var.m_arr_head_loc + arr_expr.m_index - 1) * 8 << "]\n";
+                m_gen.gen_expr(*arr_expr.m_index);
+                m_gen.pop("rax");
+                m_gen.m_output << "    mov rbx, " << m_gen.m_stack_size << "\n";
+                m_gen.m_output << "    mov rcx, " << var.m_arr_head_loc << "\n";
+                m_gen.m_output << "    sub rbx, rcx\n";
+                m_gen.m_output << "    add rbx, rax\n";
+                m_gen.m_output << "    sub rbx, 1\n";
+                m_gen.m_output << "    mov rax, 8\n";
+                m_gen.m_output << "    mul rbx\n";
+                m_gen.m_output << "    mov rbx, rax\n";
+                reg << "QWORD [rsp + rbx]";
                 m_gen.push(reg.str());
             } else {
                 m_gen.gen_error("Array undefined");
             }
+        }
+        void operator()(InExpr in_expr) {
+            m_gen.m_output << "    mov rax, 0\n";
+            m_gen.m_output << "    sub rsp, 8\n";
+            m_gen.m_output << "    lea rsi, [rsp]\n";
+            m_gen.m_output << "    mov rdx, 1\n";
+            m_gen.m_output << "    syscall\n";
+            m_gen.m_output << "    movzx rax, byte [rsp]\n";
+            m_gen.push("rax");
         }
     };
     TermVisitor visitor{*this};
@@ -116,8 +133,7 @@ void Generator::gen_stmt(const Stmt& stmt) {
             }
         }
         void operator()(ArrayStmt arr_stmt) {
-            if (!(existing_arrs.contains(arr_stmt.m_name)) && !(existing_vars.contains(arr_stmt.m_name))
-                && existing_arrs.size() < 1) {
+            if (!existing_arrs.contains(arr_stmt.m_name) && !existing_vars.contains(arr_stmt.m_name)) {
                 arr_stmt.m_arr_head_loc = m_gen.m_stack_size;
                 existing_arrs.insert({arr_stmt.m_name, arr_stmt});
                 m_gen.m_output << "    mov rcx, " << arr_stmt.m_arr_size << "\n";
@@ -127,7 +143,7 @@ void Generator::gen_stmt(const Stmt& stmt) {
                 m_gen.m_output << "    loop __loop" << m_gen.m_arr_count << "\n";
                 m_gen.m_arr_count++;
             } else {
-                m_gen.gen_error("Array unable to be created");
+                m_gen.gen_error("Container exists elsewhere");
             }
         }
         void operator()(IdentStmt ident_stmt)
@@ -177,17 +193,22 @@ void Generator::gen_stmt(const Stmt& stmt) {
         void operator()(GoStmt go_stmt) {
             m_gen.m_output << "    jmp " << go_stmt.m_dest << "\n";
         }
-        void operator()(InStmt in_stmt) {
-            m_gen.m_output << "mov rax, 0\n";
-            m_gen.m_output << "sub rsp, 8\n";
-            m_gen.m_output << "mov rdi, 0\n";
-            m_gen.m_output << "lea rsi, [rsp]\n";
-            m_gen.gen_expr(*in_stmt.m_no_bytes);
-            m_gen.pop("rax");
-            m_gen.m_output << "mov rdx, rax\n";
-            m_gen.m_output << "syscall\n";
-        }
         void operator()(OutStmt out_stmt) {
+            IdentExpr ident_expr{};
+            ident_expr.m_ident = out_stmt.m_output;
+            if (existing_vars.contains(ident_expr.m_ident)) {
+                auto var{existing_vars.at(ident_expr.m_ident)};
+                m_gen.gen_term(TermExpr{ident_expr});
+                m_gen.pop("rax");
+                m_gen.m_output << "    mov rdi, 1\n";
+                m_gen.m_output << "    lea rsi, [rsp]\n";
+                m_gen.m_output << "    mov [rsp], al\n";
+                m_gen.m_output << "    mov rdx, 1\n";
+                m_gen.m_output << "    mov rax, 0x1\n";
+                m_gen.m_output << "    syscall\n";
+            } else {
+                m_gen.gen_error("Variable specified does not exist");
+            }
         }
         void operator()(IfzStmt ifz_stmt) {
             m_gen.gen_expr(*ifz_stmt.m_cond);

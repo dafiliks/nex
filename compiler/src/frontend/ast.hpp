@@ -42,12 +42,8 @@ struct GoStmt {
     std::string m_dest{};
 };
 
-struct InStmt {
-    std::shared_ptr<Expr> m_no_bytes{};
-};
-
 struct OutStmt {
-    std::shared_ptr<Expr> m_expr{};
+    std::string m_output{};
 };
 
 struct Scope;
@@ -66,7 +62,7 @@ struct ElseStmt {
 
 struct Stmt {
     std::variant<ExitStmt, VariableStmt, ArrayStmt, IdentStmt,
-                 LabelStmt, GoStmt, InStmt, OutStmt, IfzStmt, ElseStmt> m_stmt{};
+                 LabelStmt, GoStmt, OutStmt, IfzStmt, ElseStmt> m_stmt{};
 };
 
 struct Scope {
@@ -83,7 +79,7 @@ struct IdentExpr {
 
 struct ArrayExpr {
     std::string m_ident{};
-    std::size_t m_index{};
+    std::shared_ptr<Expr> m_index{};
 };
 
 struct BinOpExpr {
@@ -92,8 +88,10 @@ struct BinOpExpr {
     std::string m_op{};
 };
 
+struct InExpr {};
+
 struct TermExpr {
-    std::variant<IntExpr, IdentExpr, ArrayExpr> m_term{};
+    std::variant<IntExpr, InExpr, IdentExpr, ArrayExpr> m_term{};
 };
 
 struct Expr {

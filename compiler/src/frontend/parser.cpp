@@ -20,13 +20,17 @@ TermExpr Parser::parse_term() {
             ArrayExpr arr_expr{};
             arr_expr.m_ident = consume().get_value();
             try_consume_expect(TokenType::sqo_bracket);
-            arr_expr.m_index = std::atoi(consume().get_value().c_str());
+            arr_expr.m_index = std::make_shared<Expr>(parse_expr());
             try_consume_expect(TokenType::sqc_bracket);
             return TermExpr{arr_expr};
         }
         IdentExpr ident_expr{};
         ident_expr.m_ident = consume().get_value();
         return TermExpr{ident_expr};
+    } else if (peek().get_type() == TokenType::in) {
+        InExpr in_expr{};
+        consume();
+        return TermExpr{in_expr};
     }
     parser_error("Expected term");
 }
@@ -84,14 +88,20 @@ Stmt Parser::parse_stmt() {
         ArrayStmt arr_stmt{};
         consume();
         arr_stmt.m_name = consume().get_value();
-        try_consume_expect(TokenType::sqo_bracket);
-        if (!(peek().get_type() == TokenType::sqc_bracket)) {
-            arr_stmt.m_arr_size = std::atoi(peek().get_value().c_str());
-            try_consume_expect(TokenType::int_lit);
-        } else {
-            // default size
+        if (peek().get_type() == TokenType::semi) {
+            consume();
             arr_stmt.m_arr_size = 30000;
+            return Stmt{arr_stmt};
         }
+        try_consume_expect(TokenType::sqo_bracket);
+        if (peek().get_type() == TokenType::sqc_bracket) {
+            consume();
+            arr_stmt.m_arr_size = 30000;
+            try_consume_expect(TokenType::semi);
+            return Stmt{arr_stmt};
+        }
+        arr_stmt.m_arr_size = std::atoi(peek().get_value().c_str());
+        try_consume_expect(TokenType::int_lit);
         try_consume_expect(TokenType::sqc_bracket);
         try_consume_expect(TokenType::semi);
         return Stmt{arr_stmt};
@@ -131,12 +141,13 @@ Stmt Parser::parse_stmt() {
         try_consume_expect(TokenType::identifier);
         try_consume_expect(TokenType::semi);
         return Stmt{go_stmt};
-    } else if (peek().get_type() == TokenType::in) {
-        InStmt in_stmt{};
+    } else if (peek().get_type() == TokenType::out) {
+        OutStmt out_stmt{};
         consume();
-        in_stmt.m_no_bytes = std::make_shared<Expr>(parse_expr());
+        out_stmt.m_output = peek().get_value();
+        try_consume_expect(TokenType::identifier);
         try_consume_expect(TokenType::semi);
-        return Stmt{in_stmt};
+        return Stmt{out_stmt};
     } else if (peek().get_type() == TokenType::ifz) {
         IfzStmt ifz_stmt{};
         consume();
