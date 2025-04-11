@@ -5,6 +5,7 @@
 #include <iostream>
 #include <unordered_map>
 #include "generator.hpp"
+#include "../frontend/tokenizer.hpp"
 
 Generator::Generator(const Program &program) : m_program(program) {}
 
@@ -115,7 +116,8 @@ void Generator::gen_stmt(const Stmt& stmt) {
     struct StmtVisitor {
         Generator& m_gen;
         void operator()(VariableStmt var_stmt) {
-            if (!(existing_vars.contains(var_stmt.m_name)) && !(existing_arrs.contains(var_stmt.m_name))) {
+            if (!existing_vars.contains(var_stmt.m_name) && !existing_arrs.contains(var_stmt.m_name)
+                && !nex_keywords.contains(var_stmt.m_name)) {
                 VariableStmt new_var{};
                 new_var.m_stack_loc = m_gen.m_stack_size;
                 existing_vars.insert({var_stmt.m_name, new_var});
@@ -129,7 +131,7 @@ void Generator::gen_stmt(const Stmt& stmt) {
                     m_gen.gen_expr(*var_stmt.m_expr);
                 }
             } else {
-                m_gen.gen_error("Container exists elsewhere");
+                m_gen.gen_error("Container exists elsewhere or use of reserved keyword as identifier");
             }
         }
         void operator()(ArrayStmt arr_stmt) {
@@ -139,8 +141,8 @@ void Generator::gen_stmt(const Stmt& stmt) {
                 m_gen.m_output << "    mov rcx, " << arr_stmt.m_arr_size << "\n";
                 m_gen.m_output << "__loop" << m_gen.m_arr_count << ":\n";
                 m_gen.push("rax");
-                m_gen.m_stack_size += arr_stmt.m_arr_size - 1;
                 m_gen.m_output << "    loop __loop" << m_gen.m_arr_count << "\n";
+                m_gen.m_stack_size += arr_stmt.m_arr_size - 1;
                 m_gen.m_arr_count++;
             } else {
                 m_gen.gen_error("Container exists elsewhere");
@@ -233,13 +235,11 @@ void Generator::gen_stmt(const Stmt& stmt) {
 }
 
 void Generator::gen_program() {
-    m_output << "main:\n";
+    m_output << "global _start\n";
+    m_output << "_start:\n";
     for (const auto& item : m_program.m_body) {
         gen_stmt(item);
     }
-    m_output << "global _start\n";
-    m_output << "_start:\n";
-    m_output << "    call main\n";
     m_output << "    mov rax, 60\n";
     m_output << "    mov rdi, 0\n";
     m_output << "    syscall\n";

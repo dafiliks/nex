@@ -38,3 +38,4 @@ out/
 .vs/
 compiler/src/CMakeFiles/
 compiler/src/Makefile/
+.cache/

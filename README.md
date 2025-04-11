@@ -1,99 +1,10 @@
 # Nex Lang
-> [!NOTE]
-> This project is currently in WIP.
+![200](https://github.com/user-attachments/assets/9367157b-5e23-456f-8ee4-9d0b346dc0c8)
 
-Nex Lang is an experimental (toy) programming language written in C++, that was made as a learning project. The purpose of this language is not to be the fastest or the most functional but to serve as an example of how a programming language is created.
+Nex Lang is a toy programming language, written in C++, that was created as a side project.
 
-I undertook this project as I was interested in how compilers work, and so far the experience has been rewarding and interesting. Although it was very tempting, I have decided to not continue using LLVM for code generation as I wanted to use this project to get better at reading and writing assembly code. I am trying to build this project entirely from scratch, therefore, most things will be found out through trial and error, so don't expect the implementation to be perfect.
+To start programming in Nex Lang, I recommend you:
+- [Build the project and learn how to compile code](INFO.md)
+- [Work through the documentation](docs/DOCS.pdf)
 
-# Example
-
-The application below showcases most of the current features of Nex Lang.
-```nex-lang
-var x = 200 + 5;
-tape b[30000];
-
-# single line comment
-x = 5;
-
-b[1] = 563 + 2 / 3;
-b[5] = 204;
-
-var c = input();
-
-output("test");
-
-set loop;
-
-#$ multi
-line
-comment $#
-
-if c > 2 {
-    b[5] = x;
-} else {
-    output("else statement");
-    go loop;
-}
-
-esc b[5] + b[1] / c;
-```
-
-# Info
-
-### Commands
-Below, you can see the usage of the nex executable and some options.
-
-```
-Nex: Usage: nex <file.nex> -o <file.asm>
-nex --version         Displays all version information
-nex --d               Enables debug mode, useful for devs
-```
-
-
-### Assembly
-Currently, Nex only outputs Intel x64 assembly. You can execute the assembly spat out by Nex using nasm.
-
-*Install commands for Arch Linux:*
-```bash
-sudo pacman -S nasm
-```
-
-To execute the assembly:
-
-```bash
-nasm -felf64 out.asm
-ld -o out out.o
-```
-
-### Extention
-`.nex` for obvious reasons.
-
-# Building
-
-#### Linux:
-Building Nex on Linux requires you to have CMake, Make, and GCC.
-
-*Install commands for Arch Linux:*
-```bash
-sudo pacman -S cmake base-devel
-```
-
-To build Nex:
-
-```bash
-git clone https://github.com/dafiliks/nex-lang
-mkdir nex-lang/build
-cd nex-lang/build
-cmake ..
-make
-# You can execute Nex with the commands below
-cd compiler/src
-./nex
-```
-
-# Contributing
-
-All contributions are welcome, so feel free to submit issues/pull requests. Coding style doesn't matter as long as naming is clear. Programming is art.
-
-<sub> © David Filiks </sub>
+<sub> Copyright (C) David Filiks </sub>

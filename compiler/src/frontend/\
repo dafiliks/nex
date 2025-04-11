@@ -19,7 +19,7 @@ TermExpr Parser::parse_term() {
         if (peek(1).get_type() == TokenType::sqo_bracket) {
             ArrayExpr arr_expr{};
             arr_expr.m_ident = consume().get_value();
-            consume();
+            try_consume_expect(TokenType::sqo_bracket);
             arr_expr.m_index = std::make_shared<Expr>(parse_expr());
             try_consume_expect(TokenType::sqc_bracket);
             return TermExpr{arr_expr};
