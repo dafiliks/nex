@@ -31,9 +31,9 @@ Building Nex on Linux requires you to have CMake, Make, and GCC.
 To build Nex:
 
 ```bash
-git clone https://github.com/dafiliks/nex-lang
-mkdir nex-lang/build
-cd nex-lang/build
+git clone https://github.com/dafiliks/nex
+mkdir nex/build
+cd nex/build
 cmake ..
 make
 cd compiler/src
