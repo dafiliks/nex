@@ -33,8 +33,8 @@ void Generator::gen_term(const TermExpr& term) {
                 m_gen.gen_expr(*arr_expr.m_index);
                 m_gen.pop("rax");
                 m_gen.m_output << "    mov rbx, " << m_gen.m_stack_size << "\n";
-                m_gen.m_output << "    mov rbp, " << var.m_arr_head_loc << "\n";
-                m_gen.m_output << "    sub rbx, rbp\n"; // using a pointer for math... gorilla mode...
+                m_gen.m_output << "    mov r9, " << var.m_arr_head_loc << "\n";
+                m_gen.m_output << "    sub rbx, r9\n";
                 m_gen.m_output << "    add rbx, rax\n";
                 m_gen.m_output << "    sub rbx, 1\n";
                 m_gen.m_output << "    mov rax, 8\n";
@@ -48,11 +48,11 @@ void Generator::gen_term(const TermExpr& term) {
         }
         void operator()(InExpr in_expr) {
             m_gen.m_output << "    mov rax, 0\n";
-            m_gen.m_output << "    sub rsp, 8\n";
-            m_gen.m_output << "    lea rsi, [rsp]\n";
+//            m_gen.m_output << "    sub rsp, 8\n";
+            m_gen.m_output << "    lea rsi, [rsp - 8]\n";
             m_gen.m_output << "    mov rdx, 1\n";
             m_gen.m_output << "    syscall\n";
-            m_gen.m_output << "    movzx rax, byte [rsp]\n";
+            m_gen.m_output << "    movzx rax, byte [rsp - 8]\n";
             m_gen.push("rax");
         }
     };
