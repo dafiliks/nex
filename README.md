@@ -2,12 +2,7 @@
 
 Nex Lang is a toy programming language, written in C++, that was created as a side project (hobby).
 
-Perfect for:
-- Minimalists
-- Beginners
-- Learning from the source code
-
-Features include:
+Features:
 - Variables
 - Exit statements
 - Mathematical operations
@@ -21,8 +16,15 @@ Features include:
 - Input
 - Output
 
-To start programming in Nex Lang, I recommend you:
+Starting out:
 - [Build the project and learn how to compile code](INFO.md)
 - [Work through the documentation](docs/DOCS.pdf)
+
+Todo:
+- Currently, Nex Lang emits a lot of repeating assembly instructions
+- Compiler needs better error messages - preferably with line numbers
+- Adding to the first point, assembly needs to get optimized more
+
+These improvements will probably be a part of my next compiler instead of being added to this project.
 
 <sub> Copyright (C) David Filiks </sub>
