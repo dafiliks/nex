@@ -49,4 +49,8 @@ When you run `make` after using `cmake ..`, you might get warnings. These warnin
 
 All contributions are welcome, so feel free to submit issues/pull requests.
 
+# License
+
+The project is available under the [MIT](https://opensource.org/licenses/MIT) license.
+
 <sub> © David Filiks </sub>
