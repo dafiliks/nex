@@ -10,71 +10,108 @@
 #include "frontend/parser.hpp"
 #include "backend/generator.hpp"
 
-void itf_error(const std::string& err_message) {
+void itf_error(const std::string& err_message)
+{
     std::cout << "Nex: interface error: " << err_message << ". Run nex help\n";
     exit(EXIT_FAILURE);
 }
 
-bool is_file_type_3(const char* file_name, const std::string ext) {
+bool is_file_type_3(const char* file_name, const std::string ext)
+{
     if (file_name[strlen(file_name) - 3] == ext.at(0) &&
         file_name[strlen(file_name) - 2] == ext.at(1) &&
-        file_name[strlen(file_name) - 1] == ext.at(2)) {
+        file_name[strlen(file_name) - 1] == ext.at(2))
+    {
         return true;
     }
+
     return false;
 }
 
-int main(int argc, char* argv[]) {
-    if (argc == 2) {
-        if (std::strcmp(argv[1], "help") == 0) {
+int main(int argc, char* argv[])
+{
+    if (argc == 2)
+    {
+        if (std::strcmp(argv[1], "help") == 0)
+        {
             std::cout << "Nex: Usage: nex <file.nex> <file.asm>\n";
             std::cout << "nex version         Displays all version information\n";
             std::cout << "nex                 Runs Nex in debug mode\n";
-        } else if (std::strcmp(argv[1], "version") == 0) {
+        }
+        else if (std::strcmp(argv[1], "version") == 0)
+        {
             std::cout << "nex (Nex) v1.0\n";
             std::cout << "Copyright (C) David Filiks\n";
             std::cout << "The software is provided \"as is\", without warranty of any kind\n";
-        } else {
+        }
+        else
+        {
             itf_error("Invalid options");
         }
-    } else if (argc == 3) {
-        if (is_file_type_3(argv[1], "nex")) {
-            if (is_file_type_3(argv[2], "asm")) {
+    }
+    else if (argc == 3)
+    {
+        if (is_file_type_3(argv[1], "nex"))
+        {
+            if (is_file_type_3(argv[2], "asm"))
+            {
                 std::ifstream source_file{argv[1]};
                 std::stringstream buffer{};
                 buffer << source_file.rdbuf();
+
                 Tokenizer tokenizer{buffer.str()};
                 tokenizer.tokenize();
+
                 Parser parser{tokenizer.get_tokens()};
                 parser.parse_program();
+
                 Generator gen{parser.get_program()};
                 gen.gen_program();
+
                 gen.get_output_str();
+
                 std::ofstream output_file{argv[2]};
                 output_file << gen.get_output_str();
-            } else {
+            }
+            else
+            {
                 itf_error("Expected output file name");
             }
-        } else {
+        }
+        else
+        {
             itf_error("Expected an option");
         }
-    } else if (argc == 1) {
+    }
+    else if (argc == 1)
+    {
         std::cout << "nex (Nex) v1.0 debug mode\n";
         std::string input{};
-        while (true) {
+
+        while (true)
+        {
             std::cout << "> ";
+
             std::getline(std::cin, input);
+
             std::cout << "\n";
+
             Tokenizer tokenizer{input};
             tokenizer.tokenize();
+
             Parser parser{tokenizer.get_tokens()};
             parser.parse_program();
+
             Generator gen{parser.get_program()};
             gen.gen_program();
+
             std::cout << gen.get_output_str();
         }
-    } else {
+    }
+    else
+    {
         itf_error("Invalid number of arguments");
     }
+
     return 0;
 }

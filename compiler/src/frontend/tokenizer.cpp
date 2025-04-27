@@ -40,11 +40,9 @@ std::vector<Token> Tokenizer::tokenize()
                 if (std::isdigit(peek()))
                 {
                     m_buffer += consume();
-
                     if (!std::isdigit(peek()))
                     {
                         m_tokens.push_back({m_buffer, TokenType::int_lit});
-
                         m_buffer.clear();
                     }
 
@@ -52,7 +50,6 @@ std::vector<Token> Tokenizer::tokenize()
                 else if (std::isalpha(peek()) || peek() == '_')
                 {
                     m_buffer += consume();
-
                     if (!std::isalpha(peek()) && peek() != '_')
                     {
                         auto match{nex_keywords.find(m_buffer)};
@@ -74,7 +71,6 @@ std::vector<Token> Tokenizer::tokenize()
                     {
                         do consume();
                         while (peek() != '#' && peek() != '\0');
-
                         consume(2);
                     }
                     else
@@ -116,7 +112,6 @@ char Tokenizer::consume(const std::size_t distance)
     if (m_index + distance < m_src.size())
     {
         m_index += distance;
-
         return m_src.at(m_index - distance);
     }
     else
@@ -147,7 +142,6 @@ char string_to_char(const std::string& s)
     {
         return s.at(0);
     }
-
     tokenizer_error("String longer than 1 char");
 }
 
@@ -163,6 +157,5 @@ std::string to_string(const TokenType token_type)
     {
         return match->second;
     }
-
     tokenizer_error("Token unknown");
 }

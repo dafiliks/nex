@@ -27,11 +27,8 @@ TermExpr Parser::parse_term()
             arr_expr.m_ident = consume().get_value();
 
             consume();
-
             arr_expr.m_index = std::make_shared<Expr>(parse_expr());
-
             try_consume_expect(TokenType::sqc_bracket);
-
             return TermExpr{arr_expr};
         }
 
@@ -43,8 +40,8 @@ TermExpr Parser::parse_term()
     else if (peek().get_type() == TokenType::in)
     {
         InExpr in_expr{};
-        consume();
 
+        consume();
         return TermExpr{in_expr};
     }
 
@@ -63,7 +60,6 @@ Expr Parser::parse_expr(int min_prec)
         }
 
         BinOpExpr bin_op_expr{};
-
         int prec{1};
 
         auto match{bin_op_prec.find(peek().get_type())};
@@ -99,9 +95,13 @@ Scope Parser::parse_scope()
 
     do
     {
+        if (is_eof(peek().get_type()))
+        {
+            parser_error("No matching bracket found");
+        }
         scope.m_body.push_back(parse_stmt());
     }
-    while (peek().get_type() != TokenType::c_bracket); // infinite loop
+    while (peek().get_type() != TokenType::c_bracket);
 
     consume();
 
@@ -115,9 +115,7 @@ Stmt Parser::parse_stmt()
         VariableStmt var_stmt{};
 
         consume();
-
         var_stmt.m_name = peek().get_value();
-
         try_consume_expect(TokenType::identifier);
 
         if (peek().get_type() == TokenType::semi)
@@ -127,9 +125,7 @@ Stmt Parser::parse_stmt()
         else
         {
             try_consume_expect(TokenType::equals);
-
             var_stmt.m_expr = std::make_shared<Expr>(parse_expr());
-
             try_consume_expect(TokenType::semi);
         }
 
@@ -140,17 +136,13 @@ Stmt Parser::parse_stmt()
         ArrayStmt arr_stmt{};
 
         consume();
-
         arr_stmt.m_name = peek().get_value();
-
         try_consume_expect(TokenType::identifier);
 
         if (peek().get_type() == TokenType::semi)
         {
             consume();
-
             arr_stmt.m_arr_size = 30000;
-
             return Stmt{arr_stmt};
         }
 
@@ -159,11 +151,8 @@ Stmt Parser::parse_stmt()
         if (peek().get_type() == TokenType::sqc_bracket)
         {
             consume();
-
             arr_stmt.m_arr_size = 30000;
-
             try_consume_expect(TokenType::semi);
-
             return Stmt{arr_stmt};
         }
 
@@ -183,23 +172,16 @@ Stmt Parser::parse_stmt()
         if (peek().get_type() == TokenType::sqo_bracket)
         {
             consume();
-
             ident_stmt.m_index = std::make_shared<Expr>(parse_expr());
-
             try_consume_expect(TokenType::sqc_bracket);
             try_consume_expect(TokenType::equals);
-
             ident_stmt.m_expr = std::make_shared<Expr>(parse_expr());
-
             try_consume_expect(TokenType::semi);
-
             return Stmt{ident_stmt};
         }
 
         try_consume_expect(TokenType::equals);
-
         ident_stmt.m_expr = std::make_shared<Expr>(parse_expr());
-
         try_consume_expect(TokenType::semi);
 
         return Stmt{ident_stmt};
@@ -209,9 +191,7 @@ Stmt Parser::parse_stmt()
         ExitStmt ex_stmt{};
 
         consume();
-
         ex_stmt.m_expr = std::make_shared<Expr>(parse_expr());
-
         try_consume_expect(TokenType::semi);
 
         return Stmt{ex_stmt};
@@ -221,9 +201,7 @@ Stmt Parser::parse_stmt()
         LabelStmt label_stmt{};
 
         consume();
-
         label_stmt.m_name = peek().get_value();
-
         try_consume_expect(TokenType::identifier);
         try_consume_expect(TokenType::semi);
 
@@ -234,9 +212,7 @@ Stmt Parser::parse_stmt()
         GoStmt go_stmt{};
 
         consume();
-
         go_stmt.m_dest = peek().get_value();
-
         try_consume_expect(TokenType::identifier);
         try_consume_expect(TokenType::semi);
 
@@ -247,9 +223,7 @@ Stmt Parser::parse_stmt()
         OutStmt out_stmt{};
 
         consume();
-
         out_stmt.m_output = peek().get_value();
-
         try_consume_expect(TokenType::identifier);
         try_consume_expect(TokenType::semi);
 
@@ -260,7 +234,6 @@ Stmt Parser::parse_stmt()
         IfzStmt ifz_stmt{};
 
         consume();
-
         ifz_stmt.m_cond = std::make_shared<Expr>(parse_expr());
         ifz_stmt.m_body = std::make_shared<Scope>(parse_scope());
 
@@ -269,7 +242,6 @@ Stmt Parser::parse_stmt()
             ElStmt else_stmt{};
 
             consume();
-
             else_stmt.m_body = std::make_shared<Scope>(parse_scope());
             ifz_stmt.m_el = std::make_shared<Stmt>(else_stmt);
         }
@@ -319,7 +291,6 @@ Token Parser::try_consume_expect(const TokenType type)
     {
         return consume();
     }
-
     parser_error("Expected " + to_string(type));
 }
 
@@ -345,7 +316,6 @@ bool is_eof(const TokenType type)
     {
         return true;
     }
-
     return false;
 }
 
@@ -358,7 +328,6 @@ bool is_stmt(const TokenType type)
     {
         return true;
     }
-
     return false;
 }
 
@@ -371,6 +340,5 @@ bool is_bin_op(const TokenType type)
     {
         return true;
     }
-
     return false;
 }

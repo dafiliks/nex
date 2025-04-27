@@ -26,7 +26,9 @@ void Generator::gen_term(const TermExpr& term)
             if (existing_vars.contains(ident_expr.m_ident))
             {
                 auto var{existing_vars.at(ident_expr.m_ident)};
+
                 std::stringstream reg{};
+
                 reg << "QWORD [rsp + " << (m_gen.m_stack_size - var.m_stack_loc - 1) * 8 << "]";
                 m_gen.push(reg.str());
             }
@@ -41,12 +43,11 @@ void Generator::gen_term(const TermExpr& term)
             if (existing_arrs.contains(arr_expr.m_ident))
             {
                 auto var{existing_arrs.at(arr_expr.m_ident)};
+
                 std::stringstream reg{};
 
                 m_gen.gen_expr(*arr_expr.m_index);
-
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    mov rbx, " << m_gen.m_stack_size << "\n";
                 m_gen.m_output << "    mov r9, " << var.m_arr_head_loc << "\n";
                 m_gen.m_output << "    sub rbx, r9\n";
@@ -55,7 +56,6 @@ void Generator::gen_term(const TermExpr& term)
                 m_gen.m_output << "    mov rax, 8\n";
                 m_gen.m_output << "    mul rbx\n";
                 m_gen.m_output << "    mov rbx, rax\n";
-
                 reg << "QWORD [rsp + rbx]";
                 m_gen.push(reg.str());
             }
@@ -67,10 +67,6 @@ void Generator::gen_term(const TermExpr& term)
 
         void operator()(InExpr in_expr)
         {
-            m_gen.new_line();
-
-            m_gen.m_output << "    ; ask for input\n";
-
             m_gen.m_output << "    mov rax, 0\n";
             m_gen.m_output << "    mov rdi, 0\n";
             m_gen.m_output << "    sub rsp, 8\n";
@@ -79,8 +75,6 @@ void Generator::gen_term(const TermExpr& term)
             m_gen.m_output << "    syscall\n";
 
             m_gen.m_output << "    movzx rax, byte [rsp]\n";
-            m_gen.m_output << "    add rsp, 8\n";
-
             m_gen.push("rax");
         }
     };
@@ -106,12 +100,9 @@ void Generator::gen_expr(const Expr& expr)
             {
                 m_gen.gen_expr(*bin_op_expr.m_lhs);
                 m_gen.gen_expr(*bin_op_expr.m_rhs);
-
                 m_gen.pop("rbx");
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    add rax, rbx\n";
-
                 m_gen.push("rax");
             }
 
@@ -119,36 +110,27 @@ void Generator::gen_expr(const Expr& expr)
             {
                 m_gen.gen_expr(*bin_op_expr.m_lhs);
                 m_gen.gen_expr(*bin_op_expr.m_rhs);
-
                 m_gen.pop("rbx");
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    sub rax, rbx\n";
-
                 m_gen.push("rax");
             }
             else if (bin_op_expr.m_op == "*")
             {
                 m_gen.gen_expr(*bin_op_expr.m_lhs);
                 m_gen.gen_expr(*bin_op_expr.m_rhs);
-
                 m_gen.pop("rbx");
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    mul rbx\n";
-
                 m_gen.push("rax");
             }
             else if (bin_op_expr.m_op == "/")
             {
                 m_gen.gen_expr(*bin_op_expr.m_lhs);
                 m_gen.gen_expr(*bin_op_expr.m_rhs);
-
                 m_gen.pop("rbx");
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    div rbx\n";
-
                 m_gen.push("rax");
             }
         }
@@ -182,7 +164,6 @@ void Generator::gen_stmt(const Stmt& stmt)
                 new_var.m_stack_loc = m_gen.m_stack_size;
 
                 existing_vars.insert({var_stmt.m_name, new_var});
-
                 if (var_stmt.m_expr == nullptr)
                 {
                     TermExpr term_expr{};
@@ -214,13 +195,9 @@ void Generator::gen_stmt(const Stmt& stmt)
 
                 m_gen.m_output << "    mov rcx, " << arr_stmt.m_arr_size << "\n";
                 m_gen.m_output << "__loop" << m_gen.m_arr_count << ":\n";
-
                 m_gen.push("rax");
-
                 m_gen.m_output << "    loop __loop" << m_gen.m_arr_count << "\n";
-
                 m_gen.m_stack_size += arr_stmt.m_arr_size - 1;
-
                 m_gen.m_arr_count++;
             }
             else
@@ -236,9 +213,7 @@ void Generator::gen_stmt(const Stmt& stmt)
                 auto var{existing_vars.at(ident_stmt.m_dest)};
 
                 m_gen.gen_expr(*ident_stmt.m_expr);
-
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    mov QWORD [rsp + " << (m_gen.m_stack_size - var.m_stack_loc - 1) * 8 << "], rax\n";
             }
             else if (existing_arrs.contains(ident_stmt.m_dest))
@@ -248,22 +223,16 @@ void Generator::gen_stmt(const Stmt& stmt)
                 m_gen.m_output << "    mov rcx, " << m_gen.m_stack_size << "\n";
                 m_gen.m_output << "    mov rbx, " << var.m_arr_head_loc << "\n";
                 m_gen.m_output << "    sub rcx, rbx\n";
-
                 m_gen.gen_expr(*ident_stmt.m_index);
-
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    mov rbx, rax\n";
                 m_gen.m_output << "    add rcx, rbx\n";
                 m_gen.m_output << "    sub rcx, 1\n";
                 m_gen.m_output << "    mov rax, 8\n";
                 m_gen.m_output << "    mul rcx\n";
                 m_gen.m_output << "    mov rcx, rax\n";
-
                 m_gen.gen_expr(*ident_stmt.m_expr);
-
                 m_gen.pop("rax");
-
                 m_gen.m_output << "    mov QWORD [rsp + rcx], rax\n";
             }
             else
@@ -275,11 +244,8 @@ void Generator::gen_stmt(const Stmt& stmt)
         void operator()(ExitStmt ex_stmt)
         {
             m_gen.gen_expr(*ex_stmt.m_expr);
-
             m_gen.m_output << "    mov rax, 60\n";
-
             m_gen.pop("rdi");
-
             m_gen.m_output << "    syscall\n";
         }
 
@@ -316,17 +282,12 @@ void Generator::gen_stmt(const Stmt& stmt)
             {
                 auto var{existing_vars.at(ident_expr.m_ident)};
 
-                m_gen.new_line();
-                m_gen.m_output << "    ; output\n";
-
                 m_gen.gen_term(TermExpr{ident_expr});
-
                 m_gen.pop("rax");
 
-                m_gen.m_output << "    mov [rsp - 1], al\n";
+                m_gen.m_output << "    lea rsi, [rsp]\n";
                 m_gen.m_output << "    mov rax, 1\n";
                 m_gen.m_output << "    mov rdi, 1\n";
-                m_gen.m_output << "    lea rsi, [rsp - 1]\n";
                 m_gen.m_output << "    mov rdx, 1\n";
                 m_gen.m_output << "    syscall\n";
             }
@@ -338,19 +299,10 @@ void Generator::gen_stmt(const Stmt& stmt)
 
         void operator()(IfzStmt ifz_stmt)
         {
-            m_gen.new_line();
-            m_gen.m_output << "    ; ifz statement\n";
-
             m_gen.gen_expr(*ifz_stmt.m_cond);
-
             m_gen.pop("rax");
-
             m_gen.m_output << "    cmp rax, 0\n";
             m_gen.m_output << "    jz __jz" << m_gen.m_jz_count << "\n";
-
-
-            m_gen.new_line();
-            m_gen.m_output << "    ; el statement\n";
 
             if (ifz_stmt.m_el != nullptr)
             {
@@ -359,11 +311,8 @@ void Generator::gen_stmt(const Stmt& stmt)
 
             m_gen.m_output << "    jmp __jz_af" << m_gen.m_jz_count << "\n";
             m_gen.m_output << "__jz" << m_gen.m_jz_count << ":\n";
-
             m_gen.gen_scope(*ifz_stmt.m_body);
-
             m_gen.m_output << "__jz_af" << m_gen.m_jz_count << ":\n";
-
             m_gen.m_jz_count++;
         }
 
@@ -379,8 +328,6 @@ void Generator::gen_stmt(const Stmt& stmt)
 
 void Generator::gen_program()
 {
-    m_output << "; start\n";
-
     m_output << "global _start\n";
     m_output << "_start:\n";
 
@@ -388,9 +335,6 @@ void Generator::gen_program()
     {
         gen_stmt(item);
     }
-
-    new_line();
-    m_output << "    ; default exit\n";
 
     m_output << "    mov rax, 60\n";
     m_output << "    mov rdi, 0\n";
