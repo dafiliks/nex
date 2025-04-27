@@ -8,7 +8,8 @@
 #include <vector>
 #include <unordered_map>
 
-enum class TokenType {
+enum class TokenType
+{
     int_lit,
     semi,
     identifier,
@@ -34,7 +35,8 @@ enum class TokenType {
     eof,
 };
 
-static const std::unordered_map<std::string, TokenType> nex_keywords {
+static const std::unordered_map<std::string, TokenType> nex_keywords
+{
     {"set", TokenType::set},
     {"go", TokenType::go},
     {"in", TokenType::in},
@@ -46,7 +48,8 @@ static const std::unordered_map<std::string, TokenType> nex_keywords {
     {"ex", TokenType::ex}
 };
 
-static const std::unordered_map<TokenType, std::string> token_names {
+static const std::unordered_map<TokenType, std::string> token_names
+{
     {TokenType::int_lit, "int_lit"},
     {TokenType::semi, "semi"},
     {TokenType::identifier, "identifier"},
@@ -72,7 +75,8 @@ static const std::unordered_map<TokenType, std::string> token_names {
     {TokenType::eof, "eof"}
 };
 
-static const std::unordered_map<char, TokenType> single_char_tokens {
+static const std::unordered_map<char, TokenType> single_char_tokens
+{
     {';', TokenType::semi},
     {'[', TokenType::sqo_bracket},
     {']', TokenType::sqc_bracket},
@@ -85,23 +89,27 @@ static const std::unordered_map<char, TokenType> single_char_tokens {
     {'/', TokenType::divide}
 };
 
-class Token {
+class Token
+{
 public:
     Token(const std::string& value, const TokenType& type);
     std::string get_value() const;
     TokenType get_type() const;
+
 private:
     std::string m_value{};
     TokenType m_type{};
 };
 
-class Tokenizer {
+class Tokenizer
+{
 public:
     Tokenizer(const std::string& src);
     std::vector<Token> tokenize();
     char peek(const std::size_t offset = 0) const;
     char consume(const std::size_t distance = 1);
     std::vector<Token> get_tokens() const;
+
 private:
     std::string m_src{};
     std::string m_buffer{};

@@ -8,14 +8,16 @@
 #include "ast.hpp"
 #include "tokenizer.hpp"
 
-static const std::unordered_map<TokenType, int> bin_op_prec{
+static const std::unordered_map<TokenType, int> bin_op_prec
+{
     {TokenType::add, 1},
     {TokenType::neg, 1},
     {TokenType::multiply, 2},
     {TokenType::divide, 2},
 };
 
-class Parser {
+class Parser
+{
 public:
 	Parser(const std::vector<Token>& tokens);
     TermExpr parse_term();
@@ -30,6 +32,7 @@ public:
     Program get_program() const;
     std::vector<Token> get_tokens() const;
     bool contains_main() const;
+
 private:
 	Program m_program{};
     std::vector<Token> m_tokens{};

@@ -12,7 +12,8 @@ static std::unordered_map<std::string, VariableStmt> existing_vars{};
 static std::unordered_map<std::string, ArrayStmt> existing_arrs{};
 static std::unordered_map<std::string, LabelStmt> existing_labels{};
 
-class Generator {
+class Generator
+{
 public:
 	Generator(const Program& program);
     void gen_term(const TermExpr& term);
@@ -22,8 +23,10 @@ public:
 	void gen_program();
 	void push(const std::string& reg);
 	void pop(const std::string& reg);
+    void new_line();
     void gen_error(const std::string& err_message) const;
     std::string get_output_str() const;
+
 private:
 	std::stringstream m_output{};
 	Program m_program{};

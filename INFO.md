@@ -22,7 +22,10 @@ ld -o file file.o
 `.nex` for obvious reasons.
 
 ### Output Target
-Nex Lang compiles into x64 Intel assembly language.
+Nex Lang compiles into x86-64 Intel style assembly language.
+
+### Compatibility
+Currently, this project has been developed and tested on Linux (Arch) machines only.
 
 # Building
 
@@ -39,6 +42,8 @@ make
 cd compiler/src
 ./nex # Debug mode
 ```
+
+When you run `make` after using `cmake ..`, you might get warnings. These warnings are false positives as the compiler does not see that the error functions are assert wrappers.
 
 # Contributing
 
