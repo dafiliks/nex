@@ -22,6 +22,7 @@ Starting out:
 
 Todo:
 - Currently, Nex Lang emits a lot of repeating assembly instructions
+- Input/Output is very fiddly and unpredictable to use.
 - Control flow in assembly could be implemented in an "easier to read" style
 - Compiler needs better error messages - preferably with line numbers
 - Adding to the first point, assembly needs to get optimized more
