@@ -102,7 +102,7 @@ struct BinOpExpr
     std::string m_op{};
 };
 
-struct InExpr;
+struct InExpr{};
 
 struct TermExpr
 {
