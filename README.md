@@ -21,13 +21,12 @@ Starting out:
 - [Work through the documentation](docs/DOCS.pdf)
 
 Todo:
-- Currently, Nex Lang emits a lot of repeating assembly instructions.
-- Input/Output is very fiddly and unpredictable to use.
-- Wrap repeated functionality in their own function.
-- Control flow in assembly could be implemented in an "easier to read" style.
-- Compiler needs better error messages - preferably with line numbers.
-- Adding to the first point, assembly needs to get optimized more.
+- [ ] Fix Nex emitting a lot of repeating assembly instructions.
+- [ ] Improve Input/Output.
+- [ ] Wrap repeated functionality in functions.
+- [ ] Reimplement the way control flow is implemented in generated assembly.
+- [ ] Better error messages.
 
-These improvements will probably be a part of my next compiler instead of being added to this project.
+These improvements will be a part of my next compiler instead of being added to this project.
 
 <sub> Copyright (C) David Filiks </sub>
