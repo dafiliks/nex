@@ -96,43 +96,30 @@ void Generator::gen_expr(const Expr& expr)
 
         void operator()(BinOpExpr bin_op_expr)
         {
+            m_gen.gen_expr(*bin_op_expr.m_lhs);
+            m_gen.gen_expr(*bin_op_expr.m_rhs);
+            m_gen.pop("rbx");
+            m_gen.pop("rax");
+
             if (bin_op_expr.m_op == "+")
             {
-                m_gen.gen_expr(*bin_op_expr.m_lhs);
-                m_gen.gen_expr(*bin_op_expr.m_rhs);
-                m_gen.pop("rbx");
-                m_gen.pop("rax");
                 m_gen.m_output << "    add rax, rbx\n";
-                m_gen.push("rax");
             }
 
             else if (bin_op_expr.m_op == "-")
             {
-                m_gen.gen_expr(*bin_op_expr.m_lhs);
-                m_gen.gen_expr(*bin_op_expr.m_rhs);
-                m_gen.pop("rbx");
-                m_gen.pop("rax");
                 m_gen.m_output << "    sub rax, rbx\n";
-                m_gen.push("rax");
             }
             else if (bin_op_expr.m_op == "*")
             {
-                m_gen.gen_expr(*bin_op_expr.m_lhs);
-                m_gen.gen_expr(*bin_op_expr.m_rhs);
-                m_gen.pop("rbx");
-                m_gen.pop("rax");
                 m_gen.m_output << "    mul rbx\n";
-                m_gen.push("rax");
             }
             else if (bin_op_expr.m_op == "/")
             {
-                m_gen.gen_expr(*bin_op_expr.m_lhs);
-                m_gen.gen_expr(*bin_op_expr.m_rhs);
-                m_gen.pop("rbx");
-                m_gen.pop("rax");
                 m_gen.m_output << "    div rbx\n";
-                m_gen.push("rax");
             }
+
+            m_gen.push("rax");
         }
     };
 
